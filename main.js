@@ -211,6 +211,45 @@ ipcMain.handle("get-all-executions", async (event, limit = 100) => {
   }
 });
 
+ipcMain.handle("get-available-tables", async () => {
+  try {
+    if (!databricksClient.connection) {
+      return { success: false, error: "Databricks not connected" };
+    }
+    const data = await databricksClient.getAvailableTables();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching available tables:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("query-table", async (event, tableName, limit = 100) => {
+  try {
+    if (!databricksClient.connection) {
+      return { success: false, error: "Databricks not connected" };
+    }
+    const data = await databricksClient.queryTable(tableName, limit);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error querying table:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("get-table-schema", async (event, tableName) => {
+  try {
+    if (!databricksClient.connection) {
+      return { success: false, error: "Databricks not connected" };
+    }
+    const data = await databricksClient.getTableSchema(tableName);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching table schema:", error);
+    return { success: false, error: error.message };
+  }
+});
+
 // Cleanup on app quit
 app.on("before-quit", async () => {
   try {

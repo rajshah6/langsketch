@@ -5,35 +5,104 @@ const { ipcRenderer } = require("electron");
 let agentData = null;
 let isLoading = false;
 let currentError = null;
+let availableTables = [];
+let currentTable = null;
+let charts = {}; // Store chart instances
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
+  loadAvailableTables();
   loadData();
 });
+
+// Cleanup charts when page is unloaded
+window.addEventListener("beforeunload", function () {
+  destroyCharts();
+});
+
+async function loadAvailableTables() {
+  try {
+    const result = await ipcRenderer.invoke("get-available-tables");
+
+    if (result.success) {
+      availableTables = result.data;
+      populateTableSelector();
+    } else {
+      console.log("Error loading tables:", result.error);
+      // Show error in dropdown
+      const select = document.getElementById("table-select");
+      select.innerHTML = '<option value="">Error loading tables</option>';
+    }
+  } catch (error) {
+    console.error("Error loading available tables:", error);
+    const select = document.getElementById("table-select");
+    select.innerHTML = '<option value="">Error loading tables</option>';
+  }
+}
+
+function populateTableSelector() {
+  const select = document.getElementById("table-select");
+
+  if (availableTables.length === 0) {
+    select.innerHTML = '<option value="">No tables found</option>';
+    return;
+  }
+
+  select.innerHTML = '<option value="">Select a table...</option>';
+
+  availableTables.forEach((table) => {
+    const option = document.createElement("option");
+    option.value = table.name;
+    option.textContent = table.name;
+    select.appendChild(option);
+  });
+
+  // Automatically select the first (most recent) table
+  if (availableTables.length > 0) {
+    select.value = availableTables[0].name;
+    currentTable = availableTables[0].name;
+    // Trigger data load for the selected table
+    loadData();
+  }
+}
 
 async function loadData() {
   try {
     showLoadingState();
-    const result = await ipcRenderer.invoke("get-latest-execution");
 
-    if (result.success) {
-      agentData = result.data;
-      if (agentData) {
+    // If a specific table is selected, load that table's data
+    if (currentTable) {
+      const result = await ipcRenderer.invoke("query-table", currentTable, 100);
+
+      if (result.success && result.data.length > 0) {
+        // Use the first row as the primary data for display
+        agentData = result.data[0];
+        // Store all data for potential use in charts/tables
+        agentData.allRows = result.data;
+        agentData.tableName = currentTable;
         initializeDashboard();
       } else {
-        // Fallback to sample data if no data found
-        console.log("No data from Databricks, using sample data");
-        loadSampleData();
+        console.log("No data found in selected table");
+        showError("No data found in the selected table");
       }
     } else {
-      console.log("Databricks error, using sample data:", result.error);
-      loadSampleData();
+      // Default behavior - get latest execution (fallback)
+      const result = await ipcRenderer.invoke("get-latest-execution");
+
+      if (result.success && result.data) {
+        agentData = result.data;
+        initializeDashboard();
+      } else {
+        console.log("No data from Databricks");
+        showError(
+          "No data available. Please select a table from the dropdown."
+        );
+      }
     }
   } catch (error) {
     console.error("Error loading data:", error);
-    console.log("Using sample data as fallback");
-    loadSampleData();
+    showError(`Error loading data: ${error.message}`);
   } finally {
     hideLoadingState();
   }
@@ -150,42 +219,79 @@ function initializeDashboard() {
   populateTables();
   updateRawData();
   updateLastUpdated();
+  updateTableInfo();
+}
+
+function updateTableInfo() {
+  const footerInfo = document.querySelector(".footer-info span");
+  if (currentTable) {
+    footerInfo.innerHTML = `Table: ${currentTable} | Last Updated: <span id="last-updated"></span>`;
+  } else if (agentData && agentData.tableName) {
+    footerInfo.innerHTML = `Table: ${agentData.tableName} | Last Updated: <span id="last-updated"></span>`;
+  } else {
+    footerInfo.innerHTML = `Agent: ConvertMilesStorySummary | Last Updated: <span id="last-updated"></span>`;
+  }
 }
 
 function updateOverviewCards() {
-  // Update execution status
+  // Update execution status - look for common success indicators
   const statusElement = document.getElementById("execution-status");
-  statusElement.textContent = agentData.success ? "Success" : "Failed";
-  statusElement.className = agentData.success
+  const success =
+    agentData.success !== undefined
+      ? agentData.success
+      : agentData.status === "success"
+      ? true
+      : agentData.status === "failed"
+      ? false
+      : true;
+  statusElement.textContent = success ? "Success" : "Failed";
+  statusElement.className = success
     ? "metric-value status-success"
     : "metric-value status-error";
 
-  // Update duration
-  document.getElementById(
-    "execution-duration"
-  ).textContent = `${agentData.execution_duration_seconds}s`;
+  // Update duration - look for common duration fields
+  const duration =
+    agentData.execution_duration_seconds ||
+    agentData.duration ||
+    agentData.execution_duration ||
+    0;
+  document.getElementById("execution-duration").textContent = `${duration}s`;
 
-  // Update cost
-  document.getElementById(
-    "execution-cost"
-  ).textContent = `$${agentData.cost_estimate_usd}`;
+  // Update cost - look for common cost fields
+  const cost =
+    agentData.cost_estimate_usd || agentData.cost || agentData.cost_usd || 0;
+  document.getElementById("execution-cost").textContent = `$${cost}`;
 
-  // Update efficiency score
+  // Update efficiency score - look for common efficiency fields
+  const efficiency =
+    agentData.efficiency_score || agentData.efficiency || agentData.score || 0;
   document.getElementById("efficiency-score").textContent = `${Math.round(
-    agentData.efficiency_score * 100
+    efficiency * 100
   )}%`;
 }
 
 function createCharts() {
+  // Destroy existing charts before creating new ones
+  destroyCharts();
+
   createPerformanceChart();
   createTokenChart();
   createToolChart();
   createTimelineChart();
 }
 
+function destroyCharts() {
+  Object.values(charts).forEach((chart) => {
+    if (chart) {
+      chart.destroy();
+    }
+  });
+  charts = {};
+}
+
 function createPerformanceChart() {
   const ctx = document.getElementById("performanceChart").getContext("2d");
-  new Chart(ctx, {
+  charts.performance = new Chart(ctx, {
     type: "bar",
     data: {
       labels: [
@@ -199,11 +305,11 @@ function createPerformanceChart() {
         {
           label: "Performance Metrics",
           data: [
-            agentData.execution_duration_seconds,
-            agentData.total_tool_calls,
-            agentData.total_llm_calls,
-            agentData.total_events,
-            agentData.tokens_per_second,
+            agentData.execution_duration_seconds || agentData.duration || 0,
+            agentData.total_tool_calls || agentData.tool_calls || 0,
+            agentData.total_llm_calls || agentData.llm_calls || 0,
+            agentData.total_events || agentData.events || 0,
+            agentData.tokens_per_second || agentData.tokens_per_sec || 0,
           ],
           backgroundColor: [
             "rgba(102, 126, 234, 0.8)",
@@ -250,15 +356,17 @@ function createPerformanceChart() {
 
 function createTokenChart() {
   const ctx = document.getElementById("tokenChart").getContext("2d");
-  new Chart(ctx, {
+  charts.token = new Chart(ctx, {
     type: "doughnut",
     data: {
       labels: ["Prompt Tokens", "Completion Tokens"],
       datasets: [
         {
           data: [
-            agentData.prompt_tokens_used,
-            agentData.completion_tokens_used,
+            agentData.prompt_tokens_used || agentData.prompt_tokens || 0,
+            agentData.completion_tokens_used ||
+              agentData.completion_tokens ||
+              0,
           ],
           backgroundColor: [
             "rgba(102, 126, 234, 0.8)",
@@ -286,11 +394,12 @@ function createTokenChart() {
 }
 
 function createToolChart() {
-  const tools = agentData.tool_names.split(",");
-  const toolCounts = [1, 1]; // Based on the data, both tools used once
+  const toolNames = agentData.tool_names || agentData.tools || "";
+  const tools = toolNames ? toolNames.split(",") : ["No tools"];
+  const toolCounts = tools.map(() => 1); // Each tool used once
 
   const ctx = document.getElementById("toolChart").getContext("2d");
-  new Chart(ctx, {
+  charts.tool = new Chart(ctx, {
     type: "pie",
     data: {
       labels: tools,
@@ -300,8 +409,15 @@ function createToolChart() {
           backgroundColor: [
             "rgba(102, 126, 234, 0.8)",
             "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(239, 68, 68, 0.8)",
           ],
-          borderColor: ["rgba(102, 126, 234, 1)", "rgba(16, 185, 129, 1)"],
+          borderColor: [
+            "rgba(102, 126, 234, 1)",
+            "rgba(16, 185, 129, 1)",
+            "rgba(245, 158, 11, 1)",
+            "rgba(239, 68, 68, 1)",
+          ],
           borderWidth: 2,
         },
       ],
@@ -323,16 +439,19 @@ function createToolChart() {
 }
 
 function createTimelineChart() {
-  const timestamps = agentData.tool_call_timestamps
-    .split(",")
-    .map((ts) => new Date(parseInt(ts) * 1000));
-  const durations = [
-    agentData.avg_tool_call_duration_ms,
-    agentData.avg_llm_call_duration_ms,
-  ];
+  const toolCallTimestamps =
+    agentData.tool_call_timestamps || agentData.tool_timestamps || "";
+  const timestamps = toolCallTimestamps
+    ? toolCallTimestamps.split(",").map((ts) => new Date(parseInt(ts) * 1000))
+    : [new Date(), new Date()];
+
+  const avgToolDuration =
+    agentData.avg_tool_call_duration_ms || agentData.avg_tool_duration || 0;
+  const avgLlmDuration =
+    agentData.avg_llm_call_duration_ms || agentData.avg_llm_duration || 0;
 
   const ctx = document.getElementById("timelineChart").getContext("2d");
-  new Chart(ctx, {
+  charts.timeline = new Chart(ctx, {
     type: "line",
     data: {
       labels: ["Tool Call 1", "Tool Call 2", "LLM Call 1", "LLM Call 2"],
@@ -340,10 +459,10 @@ function createTimelineChart() {
         {
           label: "Duration (ms)",
           data: [
-            agentData.avg_tool_call_duration_ms,
-            agentData.avg_tool_call_duration_ms,
-            agentData.avg_llm_call_duration_ms,
-            agentData.avg_llm_call_duration_ms,
+            avgToolDuration,
+            avgToolDuration,
+            avgLlmDuration,
+            avgLlmDuration,
           ],
           borderColor: "rgba(102, 126, 234, 1)",
           backgroundColor: "rgba(102, 126, 234, 0.1)",
@@ -386,73 +505,42 @@ function populateTables() {
 
 function populateExecutionDetails() {
   const tbody = document.getElementById("execution-details");
-  const details = [
-    {
-      metric: "Agent Name",
-      value: agentData.agent_name,
-      description: "Name of the executed agent",
-    },
-    {
-      metric: "Execution Date",
-      value: agentData.execution_date,
-      description: "Date when the agent was executed",
-    },
-    {
-      metric: "Execution Time",
-      value: agentData.execution_hour,
-      description: "Time of execution",
-    },
-    {
-      metric: "Total Duration",
-      value: `${agentData.execution_duration_seconds}s`,
-      description: "Total execution time in seconds",
-    },
-    {
-      metric: "Success Status",
-      value: agentData.success ? "Success" : "Failed",
-      description: "Whether the execution was successful",
-    },
-    {
-      metric: "Total Events",
-      value: agentData.total_events,
-      description: "Total number of events processed",
-    },
-    {
-      metric: "Total Tool Calls",
-      value: agentData.total_tool_calls,
-      description: "Number of tool calls made",
-    },
-    {
-      metric: "Total LLM Calls",
-      value: agentData.total_llm_calls,
-      description: "Number of LLM API calls",
-    },
-    {
-      metric: "Total Tokens",
-      value: agentData.total_tokens_used,
-      description: "Total tokens consumed",
-    },
-    {
-      metric: "Cost Estimate",
-      value: `$${agentData.cost_estimate_usd}`,
-      description: "Estimated cost in USD",
-    },
-    {
-      metric: "Efficiency Score",
-      value: `${Math.round(agentData.efficiency_score * 100)}%`,
-      description: "Overall efficiency percentage",
-    },
-    {
-      metric: "Input Size",
-      value: `${agentData.input_size_chars} chars`,
-      description: "Size of input data",
-    },
-    {
-      metric: "Validation Success",
-      value: agentData.output_validation_success ? "Yes" : "No",
-      description: "Whether output validation passed",
-    },
-  ];
+
+  // Create a generic details array from the actual data
+  const details = [];
+
+  // Add all fields from the data as rows
+  Object.keys(agentData).forEach((key) => {
+    if (key !== "allRows" && key !== "tableName") {
+      const value = agentData[key];
+      let displayValue = value;
+
+      // Format the value based on its type
+      if (typeof value === "boolean") {
+        displayValue = value ? "Yes" : "No";
+      } else if (typeof value === "number") {
+        if (key.includes("timestamp") || key.includes("time")) {
+          displayValue = new Date(value * 1000).toLocaleString();
+        } else if (key.includes("cost") || key.includes("price")) {
+          displayValue = `$${value}`;
+        } else if (key.includes("duration") || key.includes("time")) {
+          displayValue = `${value}s`;
+        } else if (key.includes("score") || key.includes("rate")) {
+          displayValue = `${Math.round(value * 100)}%`;
+        } else {
+          displayValue = value.toString();
+        }
+      } else if (typeof value === "string" && value.length > 100) {
+        displayValue = value.substring(0, 100) + "...";
+      }
+
+      details.push({
+        metric: key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+        value: displayValue,
+        description: `Field: ${key}`,
+      });
+    }
+  });
 
   tbody.innerHTML = details
     .map(
@@ -469,13 +557,37 @@ function populateExecutionDetails() {
 
 function populateToolPerformance() {
   const tbody = document.getElementById("tool-performance");
-  const tools = agentData.tool_names.split(",");
-  const toolData = tools.map((tool) => ({
-    name: tool,
-    count: 1, // Each tool used once based on the data
-    duration: agentData.avg_tool_call_duration_ms,
-    status: "Success",
-  }));
+
+  // Look for tool-related fields in the data
+  const toolFields = Object.keys(agentData).filter(
+    (key) => key.includes("tool") || key.includes("Tool")
+  );
+
+  if (toolFields.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="4">No tool-related data found</td></tr>';
+    return;
+  }
+
+  const toolData = toolFields.map((field) => {
+    const value = agentData[field];
+    let displayValue = value;
+
+    if (typeof value === "string" && value.includes(",")) {
+      displayValue = value.split(",").length;
+    } else if (typeof value === "number") {
+      displayValue = value;
+    } else {
+      displayValue = value ? "Yes" : "No";
+    }
+
+    return {
+      name: field.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      count: typeof displayValue === "number" ? displayValue : 1,
+      duration: field.includes("duration") ? agentData[field] || 0 : "N/A",
+      status: "Success",
+    };
+  });
 
   tbody.innerHTML = toolData
     .map(
@@ -483,7 +595,9 @@ function populateToolPerformance() {
     <tr>
       <td><strong>${tool.name}</strong></td>
       <td>${tool.count}</td>
-      <td>${Math.round(tool.duration)}ms</td>
+      <td>${
+        tool.duration === "N/A" ? "N/A" : Math.round(tool.duration) + "ms"
+      }</td>
       <td><span class="status-success">${tool.status}</span></td>
     </tr>
   `
@@ -493,15 +607,40 @@ function populateToolPerformance() {
 
 function populateLLMDetails() {
   const tbody = document.getElementById("llm-details");
-  const finishReasons = agentData.llm_finish_reasons.split(",");
-  const timestamps = agentData.llm_call_timestamps.split(",");
 
-  const llmData = finishReasons.map((reason, index) => ({
-    call: index + 1,
-    model: agentData.llm_model_used,
-    reason: reason,
-    timestamp: new Date(parseInt(timestamps[index]) * 1000).toLocaleString(),
-  }));
+  // Look for LLM-related fields in the data
+  const llmFields = Object.keys(agentData).filter(
+    (key) =>
+      key.includes("llm") ||
+      key.includes("LLM") ||
+      key.includes("model") ||
+      key.includes("Model")
+  );
+
+  if (llmFields.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4">No LLM-related data found</td></tr>';
+    return;
+  }
+
+  const llmData = llmFields.map((field, index) => {
+    const value = agentData[field];
+    let displayValue = value;
+
+    if (typeof value === "string" && value.includes(",")) {
+      displayValue = value.split(",")[0]; // Take first value if comma-separated
+    } else if (typeof value === "number" && field.includes("timestamp")) {
+      displayValue = new Date(value * 1000).toLocaleString();
+    }
+
+    return {
+      call: index + 1,
+      model: field.includes("model") ? value : "N/A",
+      reason: field.includes("reason") ? value : "N/A",
+      timestamp: field.includes("timestamp")
+        ? displayValue
+        : new Date().toLocaleString(),
+    };
+  });
 
   tbody.innerHTML = llmData
     .map(
@@ -519,12 +658,16 @@ function populateLLMDetails() {
 
 function updateRawData() {
   const rawDataElement = document.getElementById("raw-input-data");
-  const formattedData = JSON.stringify(
-    JSON.parse(agentData.raw_input_data),
-    null,
-    2
-  );
-  rawDataElement.textContent = formattedData;
+
+  // Show all rows from the table if available, otherwise just the current row
+  const dataToShow = agentData.allRows || [agentData];
+
+  try {
+    const formattedData = JSON.stringify(dataToShow, null, 2);
+    rawDataElement.textContent = formattedData;
+  } catch (error) {
+    rawDataElement.textContent = JSON.stringify(dataToShow, null, 2);
+  }
 }
 
 function updateLastUpdated() {
@@ -534,6 +677,16 @@ function updateLastUpdated() {
 }
 
 function setupEventListeners() {
+  // Table selector
+  document
+    .getElementById("table-select")
+    .addEventListener("change", async function (event) {
+      currentTable = event.target.value;
+      if (currentTable) {
+        await loadData();
+      }
+    });
+
   // Refresh data button
   document
     .getElementById("refresh-data")

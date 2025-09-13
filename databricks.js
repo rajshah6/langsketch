@@ -305,6 +305,52 @@ class DatabricksClient {
 
     return await this.executeQuery(query, [agentName, days]);
   }
+
+  // Get all available tables in the default schema, sorted by creation date (most recent first)
+  async getAvailableTables() {
+    const query = `
+      SELECT table_name, create_time
+      FROM information_schema.tables 
+      WHERE table_schema = 'default' 
+      ORDER BY create_time DESC
+    `;
+
+    try {
+      const results = await this.executeQuery(query);
+      return results.map((row) => ({
+        name: row.table_name,
+        createTime: row.create_time,
+      }));
+    } catch (error) {
+      // Fallback to simple SHOW TABLES if information_schema is not available
+      console.log("Falling back to SHOW TABLES query");
+      const fallbackQuery = `SHOW TABLES IN workspace.default`;
+      const results = await this.executeQuery(fallbackQuery);
+      return results.map((row) => ({
+        name: row.tableName || row.table_name,
+        createTime: null,
+      }));
+    }
+  }
+
+  // Query a specific table by name
+  async queryTable(tableName, limit = 100) {
+    const query = `
+      SELECT * FROM workspace.default.${tableName}
+      LIMIT ${limit}
+    `;
+
+    return await this.executeQuery(query);
+  }
+
+  // Get table schema information
+  async getTableSchema(tableName) {
+    const query = `
+      DESCRIBE TABLE workspace.default.${tableName}
+    `;
+
+    return await this.executeQuery(query);
+  }
 }
 
 module.exports = DatabricksClient;

@@ -43,6 +43,41 @@ body {
 .header-controls {
     display: flex;
     gap: 1rem;
+    align-items: center;
+}
+
+.table-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.table-selector label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.table-dropdown {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.875rem;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.table-dropdown:hover {
+    border-color: #667eea;
+}
+
+.table-dropdown:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 /* Buttons */
