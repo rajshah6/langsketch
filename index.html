@@ -3,105 +3,149 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LangSketch</title>
+    <title>Agent Analytics Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="app-container">
       <header class="app-header">
-        <h1>LangSketch</h1>
+        <h1>🤖 Agent Analytics Dashboard</h1>
         <div class="header-controls">
-          <button id="new-sketch" class="btn btn-primary">New Sketch</button>
-          <button id="open-file" class="btn btn-secondary">Open File</button>
-          <button id="save-file" class="btn btn-secondary">Save</button>
+          <button id="refresh-data" class="btn btn-primary">
+            Refresh Data
+          </button>
+          <button id="export-data" class="btn btn-secondary">
+            Export Report
+          </button>
         </div>
       </header>
 
       <main class="app-main">
-        <div class="sidebar">
-          <div class="sidebar-section">
-            <h3>Tools</h3>
-            <div class="tool-palette">
-              <button class="tool-btn active" data-tool="pen">✏️ Pen</button>
-              <button class="tool-btn" data-tool="brush">🖌️ Brush</button>
-              <button class="tool-btn" data-tool="eraser">🧹 Eraser</button>
-              <button class="tool-btn" data-tool="text">📝 Text</button>
-              <button class="tool-btn" data-tool="shape">🔷 Shape</button>
+        <!-- Overview Cards -->
+        <div class="overview-section">
+          <div class="metric-card success">
+            <div class="metric-icon">✅</div>
+            <div class="metric-content">
+              <h3>Execution Status</h3>
+              <p class="metric-value" id="execution-status">Success</p>
             </div>
           </div>
-
-          <div class="sidebar-section">
-            <h3>Colors</h3>
-            <div class="color-palette">
-              <div
-                class="color-swatch"
-                style="background-color: #000000"
-                data-color="#000000"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #ff0000"
-                data-color="#ff0000"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #00ff00"
-                data-color="#00ff00"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #0000ff"
-                data-color="#0000ff"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #ffff00"
-                data-color="#ffff00"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #ff00ff"
-                data-color="#ff00ff"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #00ffff"
-                data-color="#00ffff"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background-color: #ffffff"
-                data-color="#ffffff"
-              ></div>
+          <div class="metric-card">
+            <div class="metric-icon">⏱️</div>
+            <div class="metric-content">
+              <h3>Duration</h3>
+              <p class="metric-value" id="execution-duration">6.82s</p>
             </div>
-            <input type="color" id="custom-color" value="#000000" />
           </div>
-
-          <div class="sidebar-section">
-            <h3>Brush Size</h3>
-            <input type="range" id="brush-size" min="1" max="50" value="5" />
-            <span id="brush-size-value">5px</span>
+          <div class="metric-card">
+            <div class="metric-icon">💰</div>
+            <div class="metric-content">
+              <h3>Cost</h3>
+              <p class="metric-value" id="execution-cost">$0.00348</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">🎯</div>
+            <div class="metric-content">
+              <h3>Efficiency</h3>
+              <p class="metric-value" id="efficiency-score">59%</p>
+            </div>
           </div>
         </div>
 
-        <div class="canvas-container">
-          <canvas id="drawing-canvas" width="800" height="600"></canvas>
-          <div class="canvas-overlay">
-            <div class="status-bar">
-              <span id="mouse-position">x: 0, y: 0</span>
-              <span id="canvas-size">800 x 600</span>
-            </div>
+        <!-- Charts Section -->
+        <div class="charts-section">
+          <div class="chart-container">
+            <h3>Performance Metrics</h3>
+            <canvas id="performanceChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Token Usage</h3>
+            <canvas id="tokenChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Tool Usage Distribution</h3>
+            <canvas id="toolChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3>Execution Timeline</h3>
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Data Tables Section -->
+        <div class="tables-section">
+          <div class="table-container">
+            <h3>Execution Details</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="execution-details">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-container">
+            <h3>Tool Performance</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tool</th>
+                  <th>Usage Count</th>
+                  <th>Duration (ms)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tool-performance">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-container">
+            <h3>LLM Call Details</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Call #</th>
+                  <th>Model</th>
+                  <th>Finish Reason</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="llm-details">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Raw Data Section -->
+        <div class="raw-data-section">
+          <h3>Raw Input Data</h3>
+          <div class="raw-data-container">
+            <pre id="raw-input-data"></pre>
           </div>
         </div>
       </main>
 
       <footer class="app-footer">
         <div class="footer-info">
-          <span>Ready to sketch!</span>
+          <span
+            >Agent: ConvertMilesStorySummary | Last Updated:
+            <span id="last-updated"></span
+          ></span>
         </div>
       </footer>
     </div>
 
-    <script src="renderer.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
