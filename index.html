@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LangSketch</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <h1>LangSketch</h1>
+        <div class="header-controls">
+          <button id="new-sketch" class="btn btn-primary">New Sketch</button>
+          <button id="open-file" class="btn btn-secondary">Open File</button>
+          <button id="save-file" class="btn btn-secondary">Save</button>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <h3>Tools</h3>
+            <div class="tool-palette">
+              <button class="tool-btn active" data-tool="pen">✏️ Pen</button>
+              <button class="tool-btn" data-tool="brush">🖌️ Brush</button>
+              <button class="tool-btn" data-tool="eraser">🧹 Eraser</button>
+              <button class="tool-btn" data-tool="text">📝 Text</button>
+              <button class="tool-btn" data-tool="shape">🔷 Shape</button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>Colors</h3>
+            <div class="color-palette">
+              <div
+                class="color-swatch"
+                style="background-color: #000000"
+                data-color="#000000"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #ff0000"
+                data-color="#ff0000"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #00ff00"
+                data-color="#00ff00"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #0000ff"
+                data-color="#0000ff"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #ffff00"
+                data-color="#ffff00"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #ff00ff"
+                data-color="#ff00ff"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #00ffff"
+                data-color="#00ffff"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background-color: #ffffff"
+                data-color="#ffffff"
+              ></div>
+            </div>
+            <input type="color" id="custom-color" value="#000000" />
+          </div>
+
+          <div class="sidebar-section">
+            <h3>Brush Size</h3>
+            <input type="range" id="brush-size" min="1" max="50" value="5" />
+            <span id="brush-size-value">5px</span>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="drawing-canvas" width="800" height="600"></canvas>
+          <div class="canvas-overlay">
+            <div class="status-bar">
+              <span id="mouse-position">x: 0, y: 0</span>
+              <span id="canvas-size">800 x 600</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="footer-info">
+          <span>Ready to sketch!</span>
+        </div>
+      </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
