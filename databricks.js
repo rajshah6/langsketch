@@ -9,6 +9,18 @@ class DatabricksClient {
 
   async connect() {
     try {
+      // Check if required environment variables are set
+      if (
+        !process.env.DATABRICKS_SERVER_HOSTNAME ||
+        !process.env.DATABRICKS_HTTP_PATH ||
+        !process.env.DATABRICKS_ACCESS_TOKEN
+      ) {
+        console.log(
+          "Databricks environment variables not configured, skipping connection"
+        );
+        return false;
+      }
+
       this.connection = await this.client.connect({
         host: process.env.DATABRICKS_SERVER_HOSTNAME,
         path: process.env.DATABRICKS_HTTP_PATH,
@@ -20,7 +32,7 @@ class DatabricksClient {
       return true;
     } catch (error) {
       console.error("Failed to connect to Databricks:", error);
-      throw error;
+      return false;
     }
   }
 
