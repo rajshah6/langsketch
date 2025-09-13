@@ -159,7 +159,6 @@ class DynamicLangChainTool(BaseTool):
             
             fields[field_config.name] = (field_type, Field(**field_kwargs))
         
-        # Create and return the dynamic Pydantic model with v2 config
         model = create_model('ToolInputSchema', **fields)
         model.model_config = ConfigDict(extra='forbid')
         return model
