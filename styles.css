@@ -141,16 +141,17 @@ body {
     gap: 1rem;
     align-items: center;
     color: white;
+    height: auto;
 }
 
 .header-controls .btn {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    height: calc(1.5rem + 0.5rem + 0.25rem + 0.5rem + 0.75rem); /* label height + gap + dropdown height + gap + padding */
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem 0.75rem; /* Match dropdown height padding exactly */
 }
 
 .header-controls .btn:hover {
@@ -162,7 +163,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    height: calc(1.5rem + 0.5rem + 0.25rem + 0.5rem + 0.75rem); /* label height + gap + dropdown height + gap + padding */
     justify-content: center;
 }
 
@@ -770,22 +770,42 @@ body {
     pointer-events: none;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Grey and only visible when scrolling */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: transparent;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #FB9028;
+    background: #9ca3af;
     border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #e67e22;
+    background: #6b7280;
+    opacity: 1;
+}
+
+/* Show scrollbar on hover or when scrolling */
+.table-wrapper:hover::-webkit-scrollbar-thumb,
+.table-wrapper:focus::-webkit-scrollbar-thumb,
+.table-wrapper:active::-webkit-scrollbar-thumb {
+    opacity: 1;
+}
+
+/* For Firefox */
+.table-wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af transparent;
+}
+
+.table-wrapper:hover {
+    scrollbar-color: #6b7280 transparent;
 }
