@@ -3,18 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <title>LangSketch</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="title-bar">
       <div class="title-bar-left">
         <div class="window-controls">
-          <button class="window-control-button close-button" title="Close">×</button>
-          <button class="window-control-button minimize-button" title="Minimize">−</button>
-          <button class="window-control-button maximize-button" title="Maximize" id="maximizeBtn">↗</button>
+          <button class="window-control-button close-button" title="Close">
+            ×
+          </button>
+          <button
+            class="window-control-button minimize-button"
+            title="Minimize"
+          >
+            −
+          </button>
+          <button
+            class="window-control-button maximize-button"
+            title="Maximize"
+            id="maximizeBtn"
+          >
+            ↗
+          </button>
         </div>
       </div>
       <div class="title-bar-right">
@@ -27,268 +48,351 @@
       </div>
     </div>
 
-      <!-- Project Navigation Header (hidden by default) -->
-      <div class="project-nav-header" id="projectNavHeader" style="display: none;">
-        <div class="nav-button active" data-view="sketch">Sketch</div>
-        <div class="nav-button" data-view="agents">Agents</div>
-      </div>
+    <!-- Project Navigation Header (hidden by default) -->
+    <div class="project-nav-header" id="projectNavHeader" style="display: none">
+      <div class="nav-button active" data-view="sketch">Sketch</div>
+      <div class="nav-button" data-view="agents">Agents</div>
+      <div class="nav-button" data-view="databricks">Databricks</div>
+    </div>
 
-      <div class="main-content" id="mainContent">
-        <div class="open-folder-section">
-          <button class="open-folder-button">Open Project Folder</button>
-          <div class="open-folder-text">Open a folder to start graphically orchestrating an agentic system!</div>
+    <div class="main-content" id="mainContent">
+      <div class="open-folder-section">
+        <button class="open-folder-button">Open Project Folder</button>
+        <div class="open-folder-text">
+          Open a folder to start graphically orchestrating an agentic system!
         </div>
       </div>
+    </div>
 
-      <div class="settings-content" id="settingsContent" style="display: none;">
-        <div class="settings-header">
-          <h1>Settings</h1>
-          <button class="settings-close-btn" id="settingsCloseBtn">×</button>
+    <div class="settings-content" id="settingsContent" style="display: none">
+      <div class="settings-header">
+        <h1>Settings</h1>
+        <button class="settings-close-btn" id="settingsCloseBtn">×</button>
+      </div>
+      <div class="settings-list">
+        <div class="settings-item">
+          <div class="settings-item-content">
+            <div class="settings-item-title">LLM Keys</div>
+            <div class="settings-item-subtitle">No LLM Keys added.</div>
+            <div
+              class="llm-keys-list"
+              id="llmKeysList"
+              style="display: none"
+            ></div>
+          </div>
+          <button class="add-button" id="addLLMKeyBtn">+ Add</button>
         </div>
-        <div class="settings-list">
-          <div class="settings-item">
-            <div class="settings-item-content">
-              <div class="settings-item-title">LLM Keys</div>
-              <div class="settings-item-subtitle">No LLM Keys added.</div>
-              <div class="llm-keys-list" id="llmKeysList" style="display: none;"></div>
+
+        <div class="settings-item" style="margin-top: 40px">
+          <div class="settings-item-content">
+            <div class="settings-item-title">Databricks Credentials</div>
+            <div class="settings-item-subtitle">
+              No Databricks Credentials added.
             </div>
-            <button class="add-button" id="addLLMKeyBtn">+ Add</button>
+            <div
+              class="databricks-credentials-list"
+              id="databricksCredentialsList"
+              style="display: none"
+            ></div>
           </div>
-
-          <div class="settings-item" style="margin-top: 40px;">
-            <div class="settings-item-content">
-              <div class="settings-item-title">Databricks Credentials</div>
-              <div class="settings-item-subtitle">No Databricks Credentials added.</div>
-              <div class="databricks-credentials-list" id="databricksCredentialsList" style="display: none;"></div>
-            </div>
-            <button class="add-button" id="configureDatabricksBtn">⚒️ Configure</button>
-          </div>
+          <button class="add-button" id="configureDatabricksBtn">
+            ⚒️ Configure
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- LLM Key Modal -->
-      <div class="modal-overlay" id="llmKeyModal" style="display: none;">
-        <div class="modal">
-          <div class="modal-header">
-            <h2>Add LLM Key</h2>
-            <button class="modal-close-btn" id="llmKeyModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <div class="form-group">
-              <label for="providerSelect">Provider</label>
-              <div class="provider-dropdown">
-                <div class="custom-select" id="customSelect">
-                  <div class="select-selected" id="selectSelected">Select a provider</div>
-                  <div class="select-items select-hide" id="selectItems">
-                    <div class="select-option" data-value="martian">
-                      <img src="public/martian_logo.png" alt="Martian" class="provider-logo" style="width: 24px; height: 24px; object-fit: contain;">
-                      <span>Martian</span>
-                    </div>
+    <!-- LLM Key Modal -->
+    <div class="modal-overlay" id="llmKeyModal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Add LLM Key</h2>
+          <button class="modal-close-btn" id="llmKeyModalCloseBtn">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="form-group">
+            <label for="providerSelect">Provider</label>
+            <div class="provider-dropdown">
+              <div class="custom-select" id="customSelect">
+                <div class="select-selected" id="selectSelected">
+                  Select a provider
+                </div>
+                <div class="select-items select-hide" id="selectItems">
+                  <div class="select-option" data-value="martian">
+                    <img
+                      src="public/martian_logo.png"
+                      alt="Martian"
+                      class="provider-logo"
+                      style="width: 24px; height: 24px; object-fit: contain"
+                    />
+                    <span>Martian</span>
                   </div>
                 </div>
-                <input type="hidden" id="providerSelect" value="">
               </div>
-            </div>
-            <div class="form-group">
-              <label for="apiKeyInput">API Key</label>
-              <input type="password" id="apiKeyInput" placeholder="Enter your API key">
+              <input type="hidden" id="providerSelect" value="" />
             </div>
           </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="llmKeyModalCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="llmKeyModalSaveBtn">Save</button>
+          <div class="form-group">
+            <label for="apiKeyInput">API Key</label>
+            <input
+              type="password"
+              id="apiKeyInput"
+              placeholder="Enter your API key"
+            />
           </div>
         </div>
-      </div>
-
-      <!-- Databricks Credentials Modal -->
-      <div class="modal-overlay" id="databricksModal" style="display: none;">
-        <div class="modal">
-          <div class="modal-header">
-            <h2>Configure Databricks Credentials</h2>
-            <button class="modal-close-btn" id="databricksModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <div class="form-group">
-              <label for="workspaceUrlInput">Workspace URL</label>
-              <input type="url" id="workspaceUrlInput" placeholder="Enter your workspace URL">
-            </div>
-            <div class="form-group">
-              <label for="databricksTokenInput">Personal Access Token</label>
-              <input type="password" id="databricksTokenInput" placeholder="Enter your personal access token">
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="databricksModalCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="databricksModalSaveBtn">Save</button>
-          </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="llmKeyModalCancelBtn">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="llmKeyModalSaveBtn">Save</button>
         </div>
       </div>
+    </div>
 
-      <!-- Functions Management Modal -->
-      <div class="modal-overlay" id="functionsModal" style="display: none;">
-        <div class="modal functions-modal">
-          <div class="modal-header">
-            <h2>Manage Functions</h2>
-            <button class="modal-close-btn" id="functionsModalCloseBtn">×</button>
+    <!-- Databricks Credentials Modal -->
+    <div class="modal-overlay" id="databricksModal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Configure Databricks Credentials</h2>
+          <button class="modal-close-btn" id="databricksModalCloseBtn">
+            ×
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="form-group">
+            <label for="workspaceUrlInput">Workspace URL</label>
+            <input
+              type="url"
+              id="workspaceUrlInput"
+              placeholder="Enter your workspace URL"
+            />
           </div>
-          <div class="modal-content">
-            <div class="folder-navigation">
-              <div class="current-path">
-                <span>Folder Path: </span>
-                <span id="currentPath">/</span>
-              </div>
-              <div class="folder-buttons">
-                <button class="btn btn-secondary" id="goUpBtn">
-                  <span style="font-size: 18px; margin-right: 5px; vertical-align: middle;">↑</span>
-                  Go Up
-                </button>
-                <button class="btn btn-secondary" id="refreshBtn">
-                  <img src="public/reset.png" alt="Reset" style="width: 16px; height: 16px; margin-right: 5px; vertical-align: middle;">
-                  Refresh
-                </button>
-              </div>
-            </div>
-            <div class="file-list" id="fileList">
-              <!-- Files and folders will be populated here -->
-            </div>
-            <div class="function-selection" id="functionSelection" style="display: none;">
-              <h3>Select Functions from <span id="selectedFile"></span></h3>
-              <div class="functions-checkboxes" id="functionsCheckboxes">
-                <!-- Function checkboxes will be populated here -->
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="functionsModalCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="functionsModalSaveBtn">Add Selected Functions</button>
+          <div class="form-group">
+            <label for="databricksTokenInput">Personal Access Token</label>
+            <input
+              type="password"
+              id="databricksTokenInput"
+              placeholder="Enter your personal access token"
+            />
           </div>
         </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="databricksModalCancelBtn">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="databricksModalSaveBtn">
+            Save
+          </button>
+        </div>
       </div>
+    </div>
 
-      <!-- Function Details Popup -->
-      <div class="modal-overlay" id="functionDetailsModal" style="display: none;">
-        <div class="modal function-details-modal">
-          <div class="modal-header">
-            <h2>Function Details</h2>
-            <button class="modal-close-btn" id="functionDetailsModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <div class="function-details-info">
-              <div class="detail-row">
-                <span class="detail-label">Function Name:</span>
-                <span class="detail-value" id="detailFunctionName"></span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">File Path:</span>
-                <span class="detail-value" id="detailFilePath"></span>
-              </div>
+    <!-- Functions Management Modal -->
+    <div class="modal-overlay" id="functionsModal" style="display: none">
+      <div class="modal functions-modal">
+        <div class="modal-header">
+          <h2>Manage Functions</h2>
+          <button class="modal-close-btn" id="functionsModalCloseBtn">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="folder-navigation">
+            <div class="current-path">
+              <span>Folder Path: </span>
+              <span id="currentPath">/</span>
             </div>
-            <div class="function-code-section">
-              <h3>Function Code</h3>
-              <div class="code-snippet" id="functionCodeSnippet">
-                <!-- Code will be populated here -->
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="functionDetailsModalCloseBtn2">Close</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Custom Confirmation Modal -->
-      <div class="modal-overlay" id="customConfirmModal" style="display: none;">
-        <div class="modal custom-confirm-modal">
-          <div class="modal-header">
-            <h3 id="confirmModalTitle">Confirm Action</h3>
-            <button class="modal-close-btn" id="customConfirmModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <p id="confirmModalMessage">Are you sure you want to proceed?</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="customConfirmModalCancelBtn">Cancel</button>
-            <button class="btn btn-danger" id="customConfirmModalConfirmBtn">Confirm</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Custom Alert Modal -->
-      <div class="modal-overlay" id="customAlertModal" style="display: none;">
-        <div class="modal custom-alert-modal">
-          <div class="modal-header">
-            <h3 id="alertModalTitle">Information</h3>
-            <button class="modal-close-btn" id="customAlertModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <p id="alertModalMessage">This is an information message.</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" id="customAlertModalOkBtn">OK</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Intermediate JSON Popup Modal -->
-      <div class="modal-overlay" id="testJsonModal" style="display: none;">
-        <div class="modal test-json-modal">
-          <div class="modal-header">
-            <h3>Intermediate JSON Structure</h3>
-            <button class="modal-close-btn" id="testJsonModalCloseBtn">×</button>
-          </div>
-          <div class="modal-content">
-            <div class="test-json-info">
-              <p><strong>This shows what would be generated for intermediate.json:</strong></p>
-              <div class="json-preview" id="jsonPreview">
-                <pre id="jsonContent">Click "Generate Preview" to see the JSON structure</pre>
-              </div>
+            <div class="folder-buttons">
+              <button class="btn btn-secondary" id="goUpBtn">
+                <span
+                  style="
+                    font-size: 18px;
+                    margin-right: 5px;
+                    vertical-align: middle;
+                  "
+                  >↑</span
+                >
+                Go Up
+              </button>
+              <button class="btn btn-secondary" id="refreshBtn">
+                <img
+                  src="public/reset.png"
+                  alt="Reset"
+                  style="
+                    width: 16px;
+                    height: 16px;
+                    margin-right: 5px;
+                    vertical-align: middle;
+                  "
+                />
+                Refresh
+              </button>
             </div>
           </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" id="generatePreviewBtn">Generate Preview</button>
-            <button class="btn btn-primary" id="testJsonModalOkBtn">Close</button>
+          <div class="file-list" id="fileList">
+            <!-- Files and folders will be populated here -->
+          </div>
+          <div
+            class="function-selection"
+            id="functionSelection"
+            style="display: none"
+          >
+            <h3>Select Functions from <span id="selectedFile"></span></h3>
+            <div class="functions-checkboxes" id="functionsCheckboxes">
+              <!-- Function checkboxes will be populated here -->
+            </div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="functionsModalCancelBtn">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="functionsModalSaveBtn">
+            Add Selected Functions
+          </button>
+        </div>
       </div>
+    </div>
 
-      <!-- API Key Modal -->
-
-
-      <div class="footer-background"></div>
-
-      <div class="bottom-lip">
-        <span class="bottom-lip-text">LangSketch</span>
+    <!-- Function Details Popup -->
+    <div class="modal-overlay" id="functionDetailsModal" style="display: none">
+      <div class="modal function-details-modal">
+        <div class="modal-header">
+          <h2>Function Details</h2>
+          <button class="modal-close-btn" id="functionDetailsModalCloseBtn">
+            ×
+          </button>
+        </div>
+        <div class="modal-content">
+          <div class="function-details-info">
+            <div class="detail-row">
+              <span class="detail-label">Function Name:</span>
+              <span class="detail-value" id="detailFunctionName"></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">File Path:</span>
+              <span class="detail-value" id="detailFilePath"></span>
+            </div>
+          </div>
+          <div class="function-code-section">
+            <h3>Function Code</h3>
+            <div class="code-snippet" id="functionCodeSnippet">
+              <!-- Code will be populated here -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="functionDetailsModalCloseBtn2">
+            Close
+          </button>
+        </div>
       </div>
+    </div>
 
-      <button class="send-button" title="Send">
-        <img src="public/airplane.png" alt="Send">
-      </button>
-
-      <div class="folder-info">
-        0 MB
+    <!-- Custom Confirmation Modal -->
+    <div class="modal-overlay" id="customConfirmModal" style="display: none">
+      <div class="modal custom-confirm-modal">
+        <div class="modal-header">
+          <h3 id="confirmModalTitle">Confirm Action</h3>
+          <button class="modal-close-btn" id="customConfirmModalCloseBtn">
+            ×
+          </button>
+        </div>
+        <div class="modal-content">
+          <p id="confirmModalMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="customConfirmModalCancelBtn">
+            Cancel
+          </button>
+          <button class="btn btn-danger" id="customConfirmModalConfirmBtn">
+            Confirm
+          </button>
+        </div>
       </div>
+    </div>
 
-      <div class="last-modified compact" data-text="None">
-        None
+    <!-- Custom Alert Modal -->
+    <div class="modal-overlay" id="customAlertModal" style="display: none">
+      <div class="modal custom-alert-modal">
+        <div class="modal-header">
+          <h3 id="alertModalTitle">Information</h3>
+          <button class="modal-close-btn" id="customAlertModalCloseBtn">
+            ×
+          </button>
+        </div>
+        <div class="modal-content">
+          <p id="alertModalMessage">This is an information message.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="customAlertModalOkBtn">OK</button>
+        </div>
       </div>
+    </div>
 
-      <!-- Externalized scripts: load order matters; all are deferred to preserve original timing -->
-      <script src="js/state.js" defer></script>
-      <script src="js/ipc_window.js" defer></script>
-      <script src="js/fs_project.js" defer></script>
-      <script src="js/file_utilities.js" defer></script>
-      <script src="js/modal_utilities.js" defer></script>
-      <script src="js/settings_and_nav.js" defer></script>
-      <script src="js/credentials_modals.js" defer></script>
-      <script src="js/functions_browser.js" defer></script>
-      <script src="js/agents.js" defer></script>
-      <script src="js/canvas_core.js" defer></script>
-      <script src="js/canvas_connections.js" defer></script>
-      <script src="js/flow_compile.js" defer></script>
-      <!-- Components/UI that depend on the above -->
-      <script src="js/agents-tab.js" defer></script>
-      <!-- Event wiring must be last -->
-      <script src="js/init.js" defer></script>
+    <!-- Intermediate JSON Popup Modal -->
+    <div class="modal-overlay" id="testJsonModal" style="display: none">
+      <div class="modal test-json-modal">
+        <div class="modal-header">
+          <h3>Intermediate JSON Structure</h3>
+          <button class="modal-close-btn" id="testJsonModalCloseBtn">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="test-json-info">
+            <p>
+              <strong
+                >This shows what would be generated for
+                intermediate.json:</strong
+              >
+            </p>
+            <div class="json-preview" id="jsonPreview">
+              <pre id="jsonContent">
+Click "Generate Preview" to see the JSON structure</pre
+              >
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="generatePreviewBtn">
+            Generate Preview
+          </button>
+          <button class="btn btn-primary" id="testJsonModalOkBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Key Modal -->
+
+    <div class="footer-background"></div>
+
+    <div class="bottom-lip">
+      <span class="bottom-lip-text">LangSketch</span>
+    </div>
+
+    <button class="send-button" title="Send">
+      <img src="public/airplane.png" alt="Send" />
+    </button>
+
+    <div class="folder-info">0 MB</div>
+
+    <div class="last-modified compact" data-text="None">None</div>
+
+    <!-- Externalized scripts: load order matters; all are deferred to preserve original timing -->
+    <script src="js/state.js" defer></script>
+    <script src="js/ipc_window.js" defer></script>
+    <script src="js/fs_project.js" defer></script>
+    <script src="js/file_utilities.js" defer></script>
+    <script src="js/modal_utilities.js" defer></script>
+    <script src="js/settings_and_nav.js" defer></script>
+    <script src="js/credentials_modals.js" defer></script>
+    <script src="js/functions_browser.js" defer></script>
+    <script src="js/agents.js" defer></script>
+    <script src="js/canvas_core.js" defer></script>
+    <script src="js/canvas_connections.js" defer></script>
+    <script src="js/flow_compile.js" defer></script>
+    <!-- Components/UI that depend on the above -->
+    <script src="js/agents-tab.js" defer></script>
+    <script src="js/databricks-tab.js" defer></script>
+    <!-- Event wiring must be last -->
+    <script src="js/init.js" defer></script>
   </body>
 </html>
