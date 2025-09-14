@@ -196,10 +196,6 @@ class AgentRuntime:
         pass
     
     def _create_agent(self) -> None:
-        # TODO
-        pass
-
-    def _create_agent(self) -> None:
         """Create and configure the agent with all loaded tools using LangGraph"""
         try:
             # Initialize memory checkpoint for multi-turn conversations
