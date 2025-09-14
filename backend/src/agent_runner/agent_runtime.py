@@ -705,7 +705,7 @@ class AgentRuntime:
             print(f"[ANALYTICS_JSON] {json.dumps(analytics_data, indent=2)}")
             with open(f"{self.config.agent.name}_output_json.json", "w") as f:
                 json.dump([analytics_data], f)
-            test_local(self.config.agent.name, f"{self.config.agent.name}_analytics")
+            test_local(self.config.agent.name, f"{self.config.agent.name}")
 
             # Extract the final message content from LangGraph response
             raw_result = None
