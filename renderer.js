@@ -103,7 +103,6 @@ async function loadData() {
     }
   } catch (error) {
     console.error("Error loading data:", error);
-    showError(`Error loading data: ${error.message}`);
   } finally {
     hideLoadingState();
   }
@@ -346,7 +345,6 @@ function createCharts() {
 
   createPerformanceChart();
   createTokenChart();
-  createToolChart();
   createTimelineChart();
 }
 
@@ -443,51 +441,6 @@ function createTokenChart() {
             "rgba(118, 75, 162, 0.8)",
           ],
           borderColor: ["rgba(102, 126, 234, 1)", "rgba(118, 75, 162, 1)"],
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            padding: 20,
-            usePointStyle: true,
-          },
-        },
-      },
-    },
-  });
-}
-
-function createToolChart() {
-  const toolNames = agentData.tool_names || agentData.tools || "";
-  const tools = toolNames ? toolNames.split(",") : ["No tools"];
-  const toolCounts = tools.map(() => 1); // Each tool used once
-
-  const ctx = document.getElementById("toolChart").getContext("2d");
-  charts.tool = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: tools,
-      datasets: [
-        {
-          data: toolCounts,
-          backgroundColor: [
-            "rgba(102, 126, 234, 0.8)",
-            "rgba(16, 185, 129, 0.8)",
-            "rgba(245, 158, 11, 0.8)",
-            "rgba(239, 68, 68, 0.8)",
-          ],
-          borderColor: [
-            "rgba(102, 126, 234, 1)",
-            "rgba(16, 185, 129, 1)",
-            "rgba(245, 158, 11, 1)",
-            "rgba(239, 68, 68, 1)",
-          ],
           borderWidth: 2,
         },
       ],
