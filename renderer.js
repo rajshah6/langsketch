@@ -12,6 +12,7 @@ let charts = {}; // Store chart instances
 // Initialize dashboard when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
+  setupPageNavigation();
   loadAvailableTables();
   loadData();
 });
@@ -216,10 +217,23 @@ function initializeDashboard() {
 
   updateOverviewCards();
   createCharts();
-  populateTables();
   updateRawData();
   updateLastUpdated();
   updateTableInfo();
+
+  // Ensure the active page is visible
+  const activePage = document.querySelector(".page.active");
+  if (!activePage) {
+    document.getElementById("summary-page").classList.add("active");
+    document
+      .querySelector('.nav-tab[data-page="summary"]')
+      .classList.add("active");
+  }
+
+  // Populate tables with a small delay to ensure DOM is ready
+  setTimeout(() => {
+    populateTables();
+  }, 100);
 }
 
 function updateTableInfo() {
@@ -268,6 +282,63 @@ function updateOverviewCards() {
   document.getElementById("efficiency-score").textContent = `${Math.round(
     efficiency * 100
   )}%`;
+
+  // Update additional summary details
+  updateSummaryDetails();
+}
+
+function updateSummaryDetails() {
+  // Agent name
+  const agentName = agentData.agent_name || agentData.name || "Unknown Agent";
+  document.getElementById("agent-name").textContent = agentName;
+
+  // Execution date
+  const executionDate = agentData.execution_date || agentData.date || "Unknown";
+  document.getElementById("execution-date").textContent = executionDate;
+
+  // Total events
+  const totalEvents = agentData.total_events || agentData.events || 0;
+  document.getElementById("total-events").textContent = totalEvents;
+
+  // Tools used
+  const toolsUsed = agentData.total_tool_calls || agentData.tool_calls || 0;
+  document.getElementById("tools-used").textContent = toolsUsed;
+
+  // LLM calls
+  const llmCalls = agentData.total_llm_calls || agentData.llm_calls || 0;
+  document.getElementById("llm-calls").textContent = llmCalls;
+
+  // Total tokens
+  const totalTokens = agentData.total_tokens_used || agentData.tokens || 0;
+  document.getElementById("total-tokens").textContent =
+    totalTokens.toLocaleString();
+
+  // Tokens per second
+  const tokensPerSecond =
+    agentData.tokens_per_second || agentData.tokens_per_sec || 0;
+  document.getElementById(
+    "tokens-per-second"
+  ).textContent = `${tokensPerSecond} tokens/sec`;
+
+  // Most used tool
+  const mostUsedTool =
+    agentData.most_used_tool || agentData.tool_names || "None";
+  document.getElementById("most-used-tool").textContent = mostUsedTool;
+
+  // LLM model
+  const llmModel = agentData.llm_model_used || agentData.model || "Unknown";
+  document.getElementById("llm-model").textContent = llmModel;
+
+  // Validation status
+  const validationSuccess =
+    agentData.output_validation_success !== undefined
+      ? agentData.output_validation_success
+      : agentData.validation_success !== undefined
+      ? agentData.validation_success
+      : true;
+  document.getElementById("validation-status").textContent = validationSuccess
+    ? "Passed"
+    : "Failed";
 }
 
 function createCharts() {
@@ -498,13 +569,22 @@ function createTimelineChart() {
 }
 
 function populateTables() {
-  populateExecutionDetails();
-  populateToolPerformance();
-  populateLLMDetails();
+  try {
+    populateExecutionDetails();
+    populateToolPerformance();
+    populateLLMDetails();
+  } catch (error) {
+    console.error("Error populating tables:", error);
+  }
 }
 
 function populateExecutionDetails() {
   const tbody = document.getElementById("execution-details");
+
+  if (!tbody) {
+    console.error("execution-details tbody not found");
+    return;
+  }
 
   // Create a generic details array from the actual data
   const details = [];
@@ -558,6 +638,11 @@ function populateExecutionDetails() {
 function populateToolPerformance() {
   const tbody = document.getElementById("tool-performance");
 
+  if (!tbody) {
+    console.error("tool-performance tbody not found");
+    return;
+  }
+
   // Look for tool-related fields in the data
   const toolFields = Object.keys(agentData).filter(
     (key) => key.includes("tool") || key.includes("Tool")
@@ -607,6 +692,11 @@ function populateToolPerformance() {
 
 function populateLLMDetails() {
   const tbody = document.getElementById("llm-details");
+
+  if (!tbody) {
+    console.error("llm-details tbody not found");
+    return;
+  }
 
   // Look for LLM-related fields in the data
   const llmFields = Object.keys(agentData).filter(
@@ -659,6 +749,11 @@ function populateLLMDetails() {
 function updateRawData() {
   const rawDataElement = document.getElementById("raw-input-data");
 
+  if (!rawDataElement) {
+    console.error("raw-input-data element not found");
+    return;
+  }
+
   // Show all rows from the table if available, otherwise just the current row
   const dataToShow = agentData.allRows || [agentData];
 
@@ -666,6 +761,7 @@ function updateRawData() {
     const formattedData = JSON.stringify(dataToShow, null, 2);
     rawDataElement.textContent = formattedData;
   } catch (error) {
+    console.error("Error formatting raw data:", error);
     rawDataElement.textContent = JSON.stringify(dataToShow, null, 2);
   }
 }
@@ -674,6 +770,39 @@ function updateLastUpdated() {
   const lastUpdatedElement = document.getElementById("last-updated");
   const now = new Date();
   lastUpdatedElement.textContent = now.toLocaleString();
+}
+
+function setupPageNavigation() {
+  const navTabs = document.querySelectorAll(".nav-tab");
+  const pages = document.querySelectorAll(".page");
+
+  navTabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      const targetPage = this.getAttribute("data-page");
+
+      // Remove active class from all tabs and pages
+      navTabs.forEach((t) => t.classList.remove("active"));
+      pages.forEach((p) => p.classList.remove("active"));
+
+      // Add active class to clicked tab and corresponding page
+      this.classList.add("active");
+      document.getElementById(`${targetPage}-page`).classList.add("active");
+
+      // Recreate charts when switching to metrics page
+      if (targetPage === "metrics" && agentData) {
+        setTimeout(() => {
+          createCharts();
+        }, 100);
+      }
+
+      // Populate tables when switching to tables page
+      if (targetPage === "tables" && agentData) {
+        setTimeout(() => {
+          populateTables();
+        }, 100);
+      }
+    });
+  });
 }
 
 function setupEventListeners() {

@@ -27,117 +27,245 @@
         </div>
       </header>
 
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-page="summary">
+          <span class="tab-icon">📊</span>
+          <span class="tab-text">Summary</span>
+        </button>
+        <button class="nav-tab" data-page="metrics">
+          <span class="tab-icon">📈</span>
+          <span class="tab-text">Metrics</span>
+        </button>
+        <button class="nav-tab" data-page="tables">
+          <span class="tab-icon">📋</span>
+          <span class="tab-text">Data Tables</span>
+        </button>
+      </nav>
+
       <main class="app-main">
-        <!-- Overview Cards -->
-        <div class="overview-section">
-          <div class="metric-card success">
-            <div class="metric-icon">✅</div>
-            <div class="metric-content">
-              <h3>Execution Status</h3>
-              <p class="metric-value" id="execution-status">Success</p>
+        <!-- Summary Page -->
+        <div id="summary-page" class="page active">
+          <div class="page-header">
+            <h2>Execution Summary</h2>
+            <p class="page-description">
+              Overview of the latest agent execution with key performance
+              indicators
+            </p>
+          </div>
+
+          <!-- Overview Cards -->
+          <div class="overview-section">
+            <div class="metric-card success">
+              <div class="metric-icon">✅</div>
+              <div class="metric-content">
+                <h3>Execution Status</h3>
+                <p class="metric-value" id="execution-status">Success</p>
+                <p class="metric-description">Current execution state</p>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">⏱️</div>
+              <div class="metric-content">
+                <h3>Duration</h3>
+                <p class="metric-value" id="execution-duration">6.82s</p>
+                <p class="metric-description">Total execution time</p>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">💰</div>
+              <div class="metric-content">
+                <h3>Cost</h3>
+                <p class="metric-value" id="execution-cost">$0.00348</p>
+                <p class="metric-description">Estimated cost</p>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">🎯</div>
+              <div class="metric-content">
+                <h3>Efficiency</h3>
+                <p class="metric-value" id="efficiency-score">59%</p>
+                <p class="metric-description">Performance score</p>
+              </div>
             </div>
           </div>
-          <div class="metric-card">
-            <div class="metric-icon">⏱️</div>
-            <div class="metric-content">
-              <h3>Duration</h3>
-              <p class="metric-value" id="execution-duration">6.82s</p>
+
+          <!-- Additional Summary Cards -->
+          <div class="summary-details">
+            <div class="summary-card">
+              <h3>Execution Details</h3>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Agent Name:</span>
+                  <span class="detail-value" id="agent-name"
+                    >ConvertMilesStorySummary</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Execution Date:</span>
+                  <span class="detail-value" id="execution-date"
+                    >2025-09-13</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Total Events:</span>
+                  <span class="detail-value" id="total-events">4</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Tools Used:</span>
+                  <span class="detail-value" id="tools-used">2</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">LLM Calls:</span>
+                  <span class="detail-value" id="llm-calls">2</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Total Tokens:</span>
+                  <span class="detail-value" id="total-tokens">2,320</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon">💰</div>
-            <div class="metric-content">
-              <h3>Cost</h3>
-              <p class="metric-value" id="execution-cost">$0.00348</p>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon">🎯</div>
-            <div class="metric-content">
-              <h3>Efficiency</h3>
-              <p class="metric-value" id="efficiency-score">59%</p>
+
+            <div class="summary-card">
+              <h3>Performance Insights</h3>
+              <div class="insights-grid">
+                <div class="insight-item">
+                  <div class="insight-icon">⚡</div>
+                  <div class="insight-content">
+                    <h4>Speed</h4>
+                    <p id="tokens-per-second">339.98 tokens/sec</p>
+                  </div>
+                </div>
+                <div class="insight-item">
+                  <div class="insight-icon">🔧</div>
+                  <div class="insight-content">
+                    <h4>Tools</h4>
+                    <p id="most-used-tool">Unit_Converter</p>
+                  </div>
+                </div>
+                <div class="insight-item">
+                  <div class="insight-icon">🤖</div>
+                  <div class="insight-content">
+                    <h4>Model</h4>
+                    <p id="llm-model">gpt-3.5-turbo-0125</p>
+                  </div>
+                </div>
+                <div class="insight-item">
+                  <div class="insight-icon">✅</div>
+                  <div class="insight-content">
+                    <h4>Validation</h4>
+                    <p id="validation-status">Passed</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="charts-section">
-          <div class="chart-container">
-            <h3>Performance Metrics</h3>
-            <canvas id="performanceChart"></canvas>
+        <!-- Metrics Page -->
+        <div id="metrics-page" class="page">
+          <div class="page-header">
+            <h2>Performance Metrics</h2>
+            <p class="page-description">
+              Detailed visualizations and analytics for agent performance
+            </p>
           </div>
-          <div class="chart-container">
-            <h3>Token Usage</h3>
-            <canvas id="tokenChart"></canvas>
-          </div>
-          <div class="chart-container">
-            <h3>Tool Usage Distribution</h3>
-            <canvas id="toolChart"></canvas>
-          </div>
-          <div class="chart-container">
-            <h3>Execution Timeline</h3>
-            <canvas id="timelineChart"></canvas>
+
+          <!-- Charts Section -->
+          <div class="charts-section">
+            <div class="chart-container">
+              <h3>Performance Metrics</h3>
+              <canvas id="performanceChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Token Usage</h3>
+              <canvas id="tokenChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Tool Usage Distribution</h3>
+              <canvas id="toolChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Execution Timeline</h3>
+              <canvas id="timelineChart"></canvas>
+            </div>
           </div>
         </div>
 
-        <!-- Data Tables Section -->
-        <div class="tables-section">
-          <div class="table-container">
-            <h3>Data Fields</h3>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Field</th>
-                  <th>Value</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody id="execution-details">
-                <!-- Populated by JavaScript -->
-              </tbody>
-            </table>
+        <!-- Data Tables Page -->
+        <div id="tables-page" class="page">
+          <div class="page-header">
+            <h2>Data Tables</h2>
+            <p class="page-description">
+              Comprehensive data fields and detailed information
+            </p>
           </div>
 
-          <div class="table-container">
-            <h3>Tool-Related Data</h3>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Field</th>
-                  <th>Count</th>
-                  <th>Duration (ms)</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="tool-performance">
-                <!-- Populated by JavaScript -->
-              </tbody>
-            </table>
-          </div>
+          <!-- Data Tables Section -->
+          <div class="tables-section">
+            <div class="table-container">
+              <h3>Data Fields</h3>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Value</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody id="execution-details">
+                    <!-- Populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-          <div class="table-container">
-            <h3>Model-Related Data</h3>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Field #</th>
-                  <th>Model</th>
-                  <th>Reason</th>
-                  <th>Timestamp</th>
-                </tr>
-              </thead>
-              <tbody id="llm-details">
-                <!-- Populated by JavaScript -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <div class="table-container">
+              <h3>Tool-Related Data</h3>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Count</th>
+                      <th>Duration (ms)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tool-performance">
+                    <!-- Populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-        <!-- Raw Data Section -->
-        <div class="raw-data-section">
-          <h3>Table Data</h3>
-          <div class="raw-data-container">
-            <pre id="raw-input-data"></pre>
+            <div class="table-container">
+              <h3>Model-Related Data</h3>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Field #</th>
+                      <th>Model</th>
+                      <th>Reason</th>
+                      <th>Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody id="llm-details">
+                    <!-- Populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Raw Data Section -->
+            <div class="raw-data-section">
+              <h3>Raw Table Data</h3>
+              <div class="raw-data-container">
+                <pre id="raw-input-data"></pre>
+              </div>
+            </div>
           </div>
         </div>
       </main>
