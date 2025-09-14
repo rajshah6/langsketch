@@ -1,8 +1,27 @@
-const { DBSQLClient } = require("@databricks/sql");
-require("dotenv").config();
+// Note: This file is designed to work in both Node.js and browser environments
+// In Node.js, we'll use require, in browser we'll use dynamic imports
+
+let DBSQLClient;
+let dotenv;
+
+// Try to load modules if in Node.js environment
+try {
+  if (typeof require !== "undefined") {
+    DBSQLClient = require("@databricks/sql").DBSQLClient;
+    dotenv = require("dotenv");
+    dotenv.config();
+  }
+} catch (error) {
+  console.warn("Databricks SQL client not available:", error.message);
+}
 
 class DatabricksClient {
   constructor() {
+    if (!DBSQLClient) {
+      throw new Error(
+        "Databricks SQL client is not available. Please install @databricks/sql package."
+      );
+    }
     this.client = new DBSQLClient();
     this.connection = null;
   }
@@ -10,21 +29,26 @@ class DatabricksClient {
   async connect() {
     try {
       // Check if required environment variables are set
-      if (
-        !process.env.DATABRICKS_SERVER_HOSTNAME ||
-        !process.env.DATABRICKS_HTTP_PATH ||
-        !process.env.DATABRICKS_ACCESS_TOKEN
-      ) {
+      const hostname =
+        process.env.DATABRICKS_SERVER_HOSTNAME ||
+        "dbc-2f5ab88f-ea86.cloud.databricks.com";
+      const httpPath =
+        process.env.DATABRICKS_HTTP_PATH ||
+        "/sql/1.0/warehouses/your-warehouse-id";
+      const accessToken =
+        process.env.DATABRICKS_ACCESS_TOKEN || "your-personal-access-token";
+
+      if (accessToken === "your-personal-access-token") {
         console.log(
-          "Databricks environment variables not configured, skipping connection"
+          "Databricks access token not configured, using mock data. Please set DATABRICKS_ACCESS_TOKEN environment variable."
         );
         return false;
       }
 
       this.connection = await this.client.connect({
-        host: process.env.DATABRICKS_SERVER_HOSTNAME,
-        path: process.env.DATABRICKS_HTTP_PATH,
-        token: process.env.DATABRICKS_ACCESS_TOKEN,
+        host: hostname,
+        path: httpPath,
+        token: accessToken,
         catalog: process.env.DATABRICKS_CATALOG || "main",
         schema: process.env.DATABRICKS_SCHEMA || "default",
       });
