@@ -1,7 +1,7 @@
 from .agent_models import AgentSystemConfig, FieldConfig, ToolConfig, ToolInputConfig, ToolOutputConfig
 from .tool_loader import create_langchain_tool
 from .utilities import UTILITY_FUNCTIONS, UTILITY_CONFIGS
-from .deimos import setup_intelligent_router
+from .llm_router import setup_intelligent_router
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver

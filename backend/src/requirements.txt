@@ -12,3 +12,5 @@ pint>=0.25
 pydantic>=2.11.8
 requests>=2.32.5
 uvicorn>=0.35.0
+deimos-router @ git+https://github.com/withmartian/deimos-router.git@2bc61e202fd965d0f1977e8d1ce2fe51f7b0f83d
+databricks-vectorsearch>=0.59
