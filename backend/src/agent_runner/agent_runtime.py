@@ -12,7 +12,7 @@ import json
 import re
 import time
 from deimos_router import get_router
-from blackbox import test_local
+from .blackbox import test_local
 import os
 from dotenv import load_dotenv
 
@@ -39,9 +39,9 @@ class AgentRuntime:
         # Initialize all components
         self._setup_llm()
         self._setup_rag()
-        self._setup_tools()
         self._setup_utilities()
         self._setup_apis()
+        self._setup_tools()
         self._setup_scrapers()
         self._create_agent()
     
@@ -197,6 +197,16 @@ class AgentRuntime:
     def _setup_scrapers(self) -> None:
         # TODO
         pass
+
+    def _find_api_config(self, tool_name: str):
+        """Find API config by tool name"""
+        if not hasattr(self.config, 'apis') or self.config.apis is None:
+            return None
+        
+        for api in self.config.apis:
+            if api.name == tool_name:
+                return api
+        return None
 
     def _create_agent(self) -> None:
         """Create and configure the agent with all loaded tools using LangGraph"""

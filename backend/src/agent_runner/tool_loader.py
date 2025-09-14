@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Type
 from pydantic import BaseModel, Field, create_model, ConfigDict
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import CallbackManagerForToolRun
-from .agent_models import ToolConfig, ToolInputConfig, ToolOutputConfig, FieldConfig, APIConfig
+from .agent_models import ToolConfig, ToolInputConfig, ToolOutputConfig, FieldConfig, APIConfig, AuthConfig
 
 class DynamicLangChainTool(BaseTool):
     """A LangChain tool that wraps a dynamically loaded function or API call"""
@@ -102,10 +102,12 @@ class DynamicLangChainTool(BaseTool):
                 extra_params = kwargs.get('params', {})
                 
                 if method in ["POST", "PUT", "PATCH"]:
+                    # For body methods, use payload as JSON body
                     json_data = payload
+                    # Add extra params to query string
                     params.update(extra_params)
-                    print(f"[DEBUG] 📦 JSON payload: {json_data}")
                 else:
+                    # For GET and other methods, merge everything into query parameters
                     params.update(payload)
                     params.update(extra_params)
                 
@@ -142,6 +144,7 @@ class DynamicLangChainTool(BaseTool):
                 return error_msg
             finally:
                 print(f"API CALL COMPLETED: {api_config.name}")
+                # Only print response if it exists
                 if response is not None:
                     print(f"Response: {response}")
                 else:
