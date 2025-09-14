@@ -96,9 +96,6 @@ async function loadData() {
         initializeDashboard();
       } else {
         console.log("No data from Databricks");
-        showError(
-          "No data available. Please select a table from the dropdown."
-        );
       }
     }
   } catch (error) {
