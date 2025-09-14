@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Type
 from pydantic import BaseModel, Field, create_model, ConfigDict
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import CallbackManagerForToolRun
-from .agent_models import ToolConfig, ToolInputConfig, ToolOutputConfig, FieldConfig, APIConfig
+from .agent_models import ToolConfig, ToolInputConfig, ToolOutputConfig, FieldConfig, APIConfig, AuthConfig
 
 class DynamicLangChainTool(BaseTool):
     """A LangChain tool that wraps a dynamically loaded function or API call"""
@@ -68,18 +68,21 @@ class DynamicLangChainTool(BaseTool):
             raise TypeError(f"'{function_name}' is not callable")
         
         return function
-    
+       
     def _create_api_function(self, api_config: APIConfig):
         """Create a function that makes API calls based on APIConfig"""
         
         def api_function(**kwargs) -> str:
+            response = None
             
             try:
+                # Prepare the request
                 url = api_config.url
                 method = api_config.method.upper()
                 headers = api_config.headers.copy() if api_config.headers else {}
                 params = api_config.queries.copy() if api_config.queries else {}
-
+                
+                # Handle authentication
                 if api_config.auth and api_config.auth.type == "api-key" and api_config.auth.api_key:
                     auth_in = None
                     if hasattr(api_config.auth, 'in_'):
@@ -89,7 +92,8 @@ class DynamicLangChainTool(BaseTool):
                         headers[api_config.auth.field] = api_config.auth.api_key
                     elif auth_in == "query":
                         params[api_config.auth.field] = api_config.auth.api_key
-
+                        
+                # Handle different parameter types from kwargs
                 data = None
                 json_data = None
                 
@@ -98,6 +102,7 @@ class DynamicLangChainTool(BaseTool):
                 extra_params = kwargs.get('params', {})
                 
                 if method in ["POST", "PUT", "PATCH"]:
+                    # For body methods, use payload as JSON body
                     json_data = payload
                     # Add extra params to query string
                     params.update(extra_params)
@@ -105,7 +110,6 @@ class DynamicLangChainTool(BaseTool):
                     # For GET and other methods, merge everything into query parameters
                     params.update(payload)
                     params.update(extra_params)
-                        
                 
                 # Make the request
                 response = requests.request(
@@ -117,7 +121,7 @@ class DynamicLangChainTool(BaseTool):
                     data=data,
                     timeout=30
                 )
-
+                
                 # Handle response
                 if response.status_code >= 400:
                     error_msg = f"API Error {response.status_code}: {response.text}"
@@ -139,7 +143,12 @@ class DynamicLangChainTool(BaseTool):
                 error_msg = f"Error making API call: {str(e)}"
                 return error_msg
             finally:
-                print(f"Response: {response}")
+                print(f"API CALL COMPLETED: {api_config.name}")
+                # Only print response if it exists
+                if response is not None:
+                    print(f"Response: {response}")
+                else:
+                    print(f"Response: No response received (error occurred)")
         
         return api_function
     
@@ -180,22 +189,19 @@ class DynamicLangChainTool(BaseTool):
         
         return type_mapping.get(type_string.lower(), str)
     
-    def _run(
-        self, 
-        run_manager: Optional[CallbackManagerForToolRun] = None,
-        **kwargs  
-    ) -> str:
-        """Execute the loaded function with the provided arguments"""
+    def _run(self, run_manager: Optional[CallbackManagerForToolRun] = None, **kwargs) -> str:
         try:
-            # The kwargs contain the actual tool arguments passed by the agent
             if self.loaded_function is None:
                 return "Error: No function loaded"
                 
             result = self.loaded_function(**kwargs)
+            
             return str(result)
                 
         except Exception as e:
-            return f"Error executing function: {str(e)}"
+            error_msg = f"Error executing function: {str(e)}"
+            print(f"[DEBUG] Tool execution error: {error_msg}")
+            return error_msg
 
 def create_langchain_tool(tool_config: ToolConfig, builtin_function=None, api_config=None) -> DynamicLangChainTool:
     """

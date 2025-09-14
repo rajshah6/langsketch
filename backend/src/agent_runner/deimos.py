@@ -58,4 +58,4 @@ def setup_intelligent_router():
     register_router(router)
     print("Router 'agent-intelligence-router' registered successfully!")
     
-    return "deimos/agent-intelligence-router"
+    return "agent-intelligence-router"

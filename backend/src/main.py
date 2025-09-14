@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from send_files import copy_folder
+from .send_files import copy_folder
 
 app = FastAPI()
 

@@ -1,0 +1,48 @@
+{
+  "agent": {
+    "name": "TestAgent",
+    "description": "A simple agent for testing basic configuration.",
+    "color": "#00AEEF",
+    "input": {
+      "is_array": false,
+      "fields": [
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Input text to process.",
+          "required": true
+        }
+      ]
+    },
+    "output": {
+      "fields": [
+        {
+          "name": "result",
+          "type": "string",
+          "description": "The processed result."
+        }
+      ]
+    }
+  },
+  "tools": [],
+  "utilities": [],
+  "apis": [
+    {
+      "name": "CatFacts",
+      "description": "Get random cat facts. Simple and reliable API for testing.",
+      "url": "https://catfact.ninja/fact",
+      "method": "GET",
+      "auth": {
+        "type": "none",
+        "field": ""
+      },
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "example": {
+        "usage": "https://catfact.ninja/fact"
+      }
+    }
+  ],
+  "scraping": []
+}
