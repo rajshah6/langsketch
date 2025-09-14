@@ -641,10 +641,18 @@ DATABRICKS_SCHEMA=default
               displayValue = value.toLocaleString();
               description = "Numeric value";
             }
-          } else if (typeof value === "string" && value.length > 100 && key !== "agent_description") {
+          } else if (
+            typeof value === "string" &&
+            value.length > 100 &&
+            key !== "agent_description"
+          ) {
             displayValue = value.substring(0, 100) + "...";
             description = "Long text (truncated)";
-          } else if (typeof value === "string" && value.includes(",") && key !== "agent_description") {
+          } else if (
+            typeof value === "string" &&
+            value.includes(",") &&
+            key !== "agent_description"
+          ) {
             displayValue = value.split(",").length + " items";
             description = "Comma-separated list";
           }
@@ -726,27 +734,21 @@ DATABRICKS_SCHEMA=default
         fieldName.includes("timestamp")
       )
         return "Execution Details";
-      if (fieldName.includes("tool") || fieldName.includes("llm"))
-        return "Tool & LLM Usage";
       if (
         fieldName.includes("token") ||
         fieldName.includes("cost") ||
-        fieldName.includes("price")
-      )
-        return "Cost & Token Usage";
-      if (
+        fieldName.includes("price") ||
+        fieldName.includes("tool") ||
+        fieldName.includes("llm") ||
         fieldName.includes("success") ||
         fieldName.includes("error") ||
-        fieldName.includes("validation")
-      )
-        return "Status & Validation";
-      if (
+        fieldName.includes("validation") ||
         fieldName.includes("efficiency") ||
         fieldName.includes("performance") ||
         fieldName.includes("score")
       )
-        return "Performance Metrics";
-      return "Other Data";
+        return "Cost & Token Usage";
+      return "Execution Details";
     }
 
     createCharts() {
