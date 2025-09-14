@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError, create_model
 from .deimos_wrapper import DeimosCompatibleChatOpenAI
 import json
 import re
+import time
 from deimos_router import get_router
 from blackbox import test_local
 import os
@@ -587,7 +588,6 @@ class AgentRuntime:
             config = {"configurable": {"thread_id": "main"}}
             
             # Collect analytics data during execution
-            import time
             start_time = time.time()
             events = []
             tool_calls = []
@@ -722,7 +722,6 @@ class AgentRuntime:
     
     def _log_failed_analytics(self, input_data: Dict[str, Any], error_message: str, error_type: str):
         """Log analytics for failed agent runs using standardized schema"""
-        import time
         current_time = time.time()
         
         # Create empty data structures for failed runs
@@ -745,7 +744,6 @@ class AgentRuntime:
                                      tool_usage_count: Dict, success: bool = True, error_message: str = None, 
                                      error_type: str = None) -> Dict[str, Any]:
         """Create standardized analytics JSON with consistent schema for all agent types"""
-        import time
         
         # Ensure all required fields exist with defaults
         def safe_get(data, key, default=""):
