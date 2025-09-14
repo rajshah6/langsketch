@@ -8,32 +8,6 @@ import json
 from pathlib import Path
 import uuid
 
-current_dir = Path(__file__).resolve().parent
-
-config_path = current_dir / ".langsketch-credentials.json"
-
-# Load the JSON
-with open(config_path, "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-WORKSPACE_URL = None
-PERSONAL_TOKEN = None
-
-databricks_creds = config.get("databricksCredentials", [])
-if databricks_creds:
-    creds = databricks_creds[0] 
-    WORKSPACE_URL = creds.get("workspaceUrl")
-    PERSONAL_TOKEN = creds.get("personalToken")
-
-if WORKSPACE_URL and PERSONAL_TOKEN:
-    client = VectorSearchIndex(
-        workspace_url=WORKSPACE_URL,
-        personal_access_token=PERSONAL_TOKEN
-    )
-else:
-    raise ValueError("Databricks credentials not found in JSON.")
-
-
 app = FastAPI()
 
 @app.get("/")
@@ -50,7 +24,8 @@ def copy_agent_runner(destination: str):
         return {"status": "success", "message": f"Folder copied to {dst_path}"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    
+
+"""   
 @app.post("/upload-docs")
 async def upload_and_chunk(file: UploadFile = File(...)):
 
@@ -92,3 +67,4 @@ async def upload_and_chunk(file: UploadFile = File(...)):
     client.upsert(docs)
 
     return {"status": "success", "chunks_upserted": len(docs)}
+"""
