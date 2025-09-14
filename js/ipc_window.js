@@ -3,6 +3,9 @@
   const S = global.App.state;
   const { ipcRenderer } = require('electron');
 
+  // Make ipcRenderer globally available for analytics and other modules
+  global.ipcRenderer = ipcRenderer;
+
   function minimizeWindow() {
     ipcRenderer.invoke('minimize-window');
   }

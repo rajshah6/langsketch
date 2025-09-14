@@ -1,8 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 
-// Keep track of analytics window
-let analyticsWindow = null;
+// Analytics is now integrated as a tab in the main window
 
 // Set app name BEFORE anything else (most important!)
 app.setName('LangSketch');
@@ -138,48 +137,8 @@ ipcMain.handle('open-folder-dialog', async (event) => {
   return { canceled: true, filePaths: [] };
 });
 
-// Analytics window creation
-function createAnalyticsWindow(projectPath) {
-  // If analytics window already exists, focus it and update project path
-  if (analyticsWindow && !analyticsWindow.isDestroyed()) {
-    analyticsWindow.focus();
-    analyticsWindow.webContents.send('init-analytics', { projectPath });
-    return;
-  }
-
-  analyticsWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    title: 'LangSketch - Analytics Dashboard',
-    icon: iconPath,
-    autoHideMenuBar: true,
-    show: false, // Don't show until ready
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
-    },
-  });
-
-  analyticsWindow.loadFile('analytics/index.html');
-
-  // Show window when ready to prevent flash
-  analyticsWindow.once('ready-to-show', () => {
-    analyticsWindow.show();
-    // Send initialization data
-    analyticsWindow.webContents.send('init-analytics', { projectPath });
-  });
-
-  // Clean up reference when window is closed
-  analyticsWindow.on('closed', () => {
-    analyticsWindow = null;
-  });
-}
-
-// IPC handler for opening analytics
-ipcMain.on('open-analytics', (event, data) => {
-  createAnalyticsWindow(data.projectPath);
-});
+// Analytics is now embedded as a tab in the main window
+// No separate window creation needed
 
 // IPC handler for getting Databricks config (placeholder)
 ipcMain.handle('get-databricks-config', async () => {
