@@ -9,13 +9,22 @@
     "build": "electron-builder",
     "build:mac": "electron-builder --mac"
   },
-  "keywords": ["language", "sketching", "electron", "desktop"],
+  "keywords": [
+    "language",
+    "sketching",
+    "electron",
+    "desktop"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "icon": "public/icon.iconset/icon_512x512.png",
   "productName": "LangSketch",
   "displayName": "LangSketch",
+  "dependencies": {
+    "@databricks/sql": "^1.11.0",
+    "dotenv": "^16.6.1"
+  },
   "devDependencies": {
     "electron": "^37.2.6",
     "electron-builder": "^26.0.12"

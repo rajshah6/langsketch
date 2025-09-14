@@ -39,7 +39,21 @@
 
     // Canvas dimensions (constants)
     CANVAS_WIDTH: 10000,
-    CANVAS_HEIGHT: 10000
+    CANVAS_HEIGHT: 10000,
+
+    // Analytics state
+    analytics: {
+      tables: [],
+      activeTable: null,
+      cache: { summary: null, metrics: null, tables: null },
+      isLoading: false,
+      currentError: null,
+      agentData: null,
+      charts: {},
+      fetch: null,
+      exportReport: null,
+      openDatabricks: null
+    }
   };
 
   // Initialize App namespace

@@ -426,6 +426,27 @@
         // Ensure connection lines are cleared when switching to agents view
         setTimeout(() => clearAllConnectionLines(), 100);
         break;
+
+      case 'analytics':
+        // Initialize analytics view using component
+        const analyticsInstance = window.analyticsTabInstance;
+        if (analyticsInstance) {
+          analyticsInstance.show();
+        } else {
+          // Fallback content if component not loaded
+          mainContent.innerHTML = `
+            <div class="analytics-view">
+              <div class="analytics-header-section">
+                <h1 class="analytics-main-title">Analytics Dashboard</h1>
+                <p>Loading analytics...</p>
+              </div>
+            </div>
+          `;
+        }
+
+        // Ensure connection lines are cleared when switching to analytics view
+        setTimeout(() => clearAllConnectionLines(), 100);
+        break;
     }
   }
 

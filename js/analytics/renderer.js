@@ -17,6 +17,17 @@ document.addEventListener("DOMContentLoaded", function () {
   loadData();
 });
 
+// Listen for initialization data from main process
+ipcRenderer.on("init-analytics", (event, data) => {
+  if (data.projectPath) {
+    // Update the header to show the project path
+    const headerTitle = document.querySelector(".app-header h1");
+    if (headerTitle) {
+      headerTitle.textContent = data.projectPath;
+    }
+  }
+});
+
 // Cleanup charts when page is unloaded
 window.addEventListener("beforeunload", function () {
   destroyCharts();
@@ -771,6 +782,14 @@ function setupEventListeners() {
   ipcRenderer.on("databricks-error", (event, errorMessage) => {
     showError(`Databricks connection error: ${errorMessage}`);
   });
+
+  // Back button
+  const backButton = document.getElementById("back-button");
+  if (backButton) {
+    backButton.addEventListener("click", function () {
+      window.close();
+    });
+  }
 }
 
 function exportData() {

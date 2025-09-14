@@ -12,9 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <div class="app-container">
-      <header class="app-header">
-        <h1>~/Downloads/pprograms</h1>
+    <div id="analytics-app" class="analytics">
+      <div class="app-container">
+        <header class="app-header">
+          <button id="back-button" class="back-button" title="Back to main app">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <h1>Execution Summary</h1>
         <div class="header-controls">
           <div class="table-selector">
             <label for="table-select">Select Table:</label>
@@ -267,8 +271,11 @@
           </div>
         </div>
       </main>
+      </div>
     </div>
 
-    <script src="renderer.js"></script>
+    <script src="../js/analytics/config.js"></script>
+    <script src="../js/analytics/databricks.js"></script>
+    <script src="../js/analytics/renderer.js"></script>
   </body>
 </html>
