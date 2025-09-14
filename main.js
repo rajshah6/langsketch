@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 
+// Keep track of analytics window
+let analyticsWindow = null;
+
 // Set app name BEFORE anything else (most important!)
 app.setName('LangSketch');
 
@@ -133,6 +136,80 @@ ipcMain.handle('open-folder-dialog', async (event) => {
     }
   }
   return { canceled: true, filePaths: [] };
+});
+
+// Analytics window creation
+function createAnalyticsWindow(projectPath) {
+  // If analytics window already exists, focus it and update project path
+  if (analyticsWindow && !analyticsWindow.isDestroyed()) {
+    analyticsWindow.focus();
+    analyticsWindow.webContents.send('init-analytics', { projectPath });
+    return;
+  }
+
+  analyticsWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    title: 'LangSketch - Analytics Dashboard',
+    icon: iconPath,
+    autoHideMenuBar: true,
+    show: false, // Don't show until ready
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+    },
+  });
+
+  analyticsWindow.loadFile('analytics/index.html');
+
+  // Show window when ready to prevent flash
+  analyticsWindow.once('ready-to-show', () => {
+    analyticsWindow.show();
+    // Send initialization data
+    analyticsWindow.webContents.send('init-analytics', { projectPath });
+  });
+
+  // Clean up reference when window is closed
+  analyticsWindow.on('closed', () => {
+    analyticsWindow = null;
+  });
+}
+
+// IPC handler for opening analytics
+ipcMain.on('open-analytics', (event, data) => {
+  createAnalyticsWindow(data.projectPath);
+});
+
+// IPC handler for getting Databricks config (placeholder)
+ipcMain.handle('get-databricks-config', async () => {
+  // This would read from the main app's credential storage
+  // For now, return default config structure
+  return {
+    success: true,
+    config: {
+      databricks: {
+        serverHostname: "your-databricks-workspace-url",
+        httpPath: "your-http-path",
+        accessToken: "your-personal-access-token",
+        catalog: "main",
+        schema: "default",
+      },
+      table: {
+        agentExecutions: "agent_executions",
+      },
+    },
+  };
+});
+
+// IPC handler for getting available tables (placeholder)
+ipcMain.handle('get-available-tables', async () => {
+  // This would query Databricks for available tables
+  // For now, return mock data
+  return {
+    success: true,
+    data: ["agent_executions", "test_table", "analytics_data"],
+  };
 });
 
 app.whenReady().then(() => {

@@ -144,6 +144,32 @@
             border-color: #218838;
             color: white;
           }
+          .agents-analytics-button {
+            background-color: transparent;
+            border: 2px solid #FB9028;
+            color: #FB9028;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 32px;
+            margin-left: 15px;
+          }
+          .agents-analytics-button:hover {
+            background-color: #FB9028;
+            color: white;
+          }
+          .agents-analytics-button:active {
+            background-color: #e8811f;
+            border-color: #e8811f;
+            color: white;
+          }
 
           .add-agent-page {
             display: flex;
@@ -2381,6 +2407,7 @@
             <div class="agents-controls">
               <input type="text" class="agents-search-input" placeholder="Search agents by name..." id="agentsSearchInput">
               <button class="agents-add-button" id="agentsAddButton">+ Add Agent</button>
+              <button class="agents-analytics-button" id="agentsAnalyticsButton">📊 Open Analytics</button>
             </div>
           </div>
           <div class="agents-listing-section" id="agentsListingSection">
@@ -2405,6 +2432,14 @@
       if (addAgentButton) {
         addAgentButton.addEventListener('click', () => {
           this.handleAddAgent();
+        });
+      }
+
+      // Analytics button functionality
+      const analyticsButton = document.getElementById('agentsAnalyticsButton');
+      if (analyticsButton) {
+        analyticsButton.addEventListener('click', () => {
+          this.handleOpenAnalytics();
         });
       }
     }
@@ -3262,6 +3297,24 @@
       if (resetFilesBtn) {
         resetFilesBtn.addEventListener('click', () => this.resetDocuments());
       }
+    }
+
+    handleOpenAnalytics() {
+      console.log('Open Analytics button clicked');
+
+      // Get current project path from state
+      const S = this.S; // Access the shared state
+      const currentProjectPath = S.currentProjectPath;
+
+      if (!currentProjectPath) {
+        console.warn('No project selected. Cannot open analytics.');
+        // Could show a modal or notification here
+        return;
+      }
+
+      // Send IPC message to main process to open analytics window
+      const { ipcRenderer } = require('electron');
+      ipcRenderer.send('open-analytics', { projectPath: currentProjectPath });
     }
 
     async handleCreateAgent() {

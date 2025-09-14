@@ -1,3 +1,4 @@
 .env
 *_output_json.json
 __pycache__/
+node_modules
