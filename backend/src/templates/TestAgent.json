@@ -24,6 +24,14 @@
       ]
     }
   },
+    "rag": {
+    "provider": "databricks",
+    "endpoint": "langsketch",                
+    "index_name": "workspace.default.langsketch",                                     
+    "embedding_model": "databricks-bge-small",  
+    "chunk_size": 500,                          
+    "top_k": 5                                
+  },
   "tools": [],
   "utilities": [],
   "apis": [

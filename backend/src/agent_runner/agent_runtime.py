@@ -98,12 +98,14 @@ class AgentRuntime:
         )
 
     def _setup_rag(self) -> None:
-        self.index = client.get_index(endpoint_name="langsketch", index_name="workspace.default.langsketch")
+        self.index = client.get_index(endpoint_name=self.config.rag.endpoint, index_name=self.config.rag.index_name)
     
     def _get_context(self, prompt: str) -> List[str]:
         # Retrieve top 3 chunks
         relevant_chunks = self.index.similarity_search(num_results=3, columns=["text"], query_text=prompt)
-        raw_texts = [row['text'] for row in relevant_chunks] 
+        data_array = relevant_chunks['result']['data_array']
+        raw_texts = [row[0] for row in data_array]  
+        
         return raw_texts
     
     def _setup_apis(self) -> None:
@@ -607,12 +609,10 @@ class AgentRuntime:
                 input_summary = f"Input Data: {json.dumps(validated_input, indent=2)}"
 
             query_string = ""
-            context_text = ""
-            if self.config.rag:
-                context = self._get_context(str(input_data))
-                context_text = "\n".join(f"- {chunk}" for chunk in context)
-                if context_text:
-                    context_text = f"Relevant context:\n{context_text}\n"
+            context = self._get_context(str(input_data))
+            context_text = "\n".join(f"- {chunk}" for chunk in context)
+            if context_text:
+                context_text = f"Relevant context:\n{context_text}\n"
 
             # Build the query string
             query_string = f"""

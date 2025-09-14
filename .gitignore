@@ -2,3 +2,4 @@
 *_output_json.json
 __pycache__/
 node_modules
+.langsketch-credentials.json
