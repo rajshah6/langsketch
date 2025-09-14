@@ -147,6 +147,10 @@ body {
     background: rgba(255, 255, 255, 0.2);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    height: calc(1.5rem + 0.5rem + 0.25rem + 0.5rem + 0.75rem); /* label height + gap + dropdown height + gap + padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .header-controls .btn:hover {
@@ -158,6 +162,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    height: calc(1.5rem + 0.5rem + 0.25rem + 0.5rem + 0.75rem); /* label height + gap + dropdown height + gap + padding */
+    justify-content: center;
 }
 
 .table-selector label {
