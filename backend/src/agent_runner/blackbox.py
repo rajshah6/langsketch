@@ -339,6 +339,6 @@ def test_local(agent_name, table_name):
     filename = f"{agent_name}_output_json.json"
     with open(filename, "r") as f:
         data = json.load(f)
-    success = upload_agent_data_to_databricks("test_agent", data, "default.test_table")
+    success = upload_agent_data_to_databricks(agent_name, data, f"default.{agent_name}")
     print(f"Upload successful: {success}")
 
