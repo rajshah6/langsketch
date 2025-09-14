@@ -370,76 +370,80 @@
 
 /* Tables Section */
 .analytics .tables-section {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
+  margin-bottom: 2rem;
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
 }
 
 .analytics .table-container {
   background: white;
   border-radius: 12px;
+  padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 500px;
 }
 
 .analytics .table-container h3 {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: #1f2937;
-  margin: 0;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .analytics .table-wrapper {
-  overflow-x: auto;
-  max-height: 500px;
-  overflow-y: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0 0 12px 12px;
+  overflow: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-height: 0;
 }
 
 .analytics .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  table-layout: fixed;
 }
 
 .analytics .data-table th {
-  background: #f8f9fa;
-  color: #1f2937;
-  font-weight: 600;
-  padding: 0.75rem 1rem;
+  background: #FB9028;
+  color: white;
+  padding: 1rem;
   text-align: left;
-  border-bottom: 2px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.analytics .data-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f3f4f6;
-  color: #374151;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+  width: 33.33%;
   word-wrap: break-word;
-  word-break: break-word;
   white-space: normal;
-  max-width: 300px;
   vertical-align: top;
 }
 
-.analytics .data-table tbody tr:hover {
-  background: #f9fafb;
+.analytics .data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  width: 33.33%;
+  word-wrap: break-word;
+  white-space: normal;
+  vertical-align: top;
 }
 
-.analytics .data-table tbody tr:nth-child(even) {
-  background: #fafbfc;
+.analytics .data-table tr:hover {
+  background-color: #f9fafb;
 }
 
-.analytics .data-table tbody tr:nth-child(even):hover {
-  background: #f3f4f6;
+.analytics .data-table tr:last-child td {
+  border-bottom: none;
 }
 
 /* Special styling for agent description field */
@@ -453,6 +457,33 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .analytics .charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .analytics .tables-section {
+    grid-template-columns: 1fr;
+    max-height: calc(100vh - 150px);
+  }
+  
+  .analytics .table-container {
+    max-height: 400px;
+  }
+  
+  .analytics .summary-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .analytics .detail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .analytics .insights-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .analytics-subnav {
     flex-direction: column;
@@ -477,12 +508,42 @@
     grid-template-columns: 1fr;
   }
 
+  .analytics .tables-section {
+    max-height: calc(100vh - 120px);
+  }
+  
+  .analytics .table-container {
+    max-height: 300px;
+    padding: 1rem;
+  }
+
   .analytics .detail-grid {
     grid-template-columns: 1fr;
   }
 
   .analytics .insights-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics .data-table {
+    font-size: 0.8rem;
+  }
+  
+  .analytics .data-table th,
+  .analytics .data-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .analytics .table-container {
+    max-height: 250px;
+    padding: 0.75rem;
+  }
+  
+  .analytics .tables-section {
+    max-height: calc(100vh - 100px);
   }
 }
 
@@ -523,4 +584,44 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Custom scrollbar - Grey and only visible when scrolling */
+.analytics ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.analytics ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.analytics ::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.analytics ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+  opacity: 1;
+}
+
+/* Show scrollbar on hover or when scrolling */
+.analytics .table-wrapper:hover::-webkit-scrollbar-thumb,
+.analytics .table-wrapper:focus::-webkit-scrollbar-thumb,
+.analytics .table-wrapper:active::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+/* For Firefox */
+.analytics .table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af transparent;
+}
+
+.analytics .table-wrapper:hover {
+  scrollbar-color: #6b7280 transparent;
 }
