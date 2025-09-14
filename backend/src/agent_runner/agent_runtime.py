@@ -5,12 +5,13 @@ from .deimos import setup_intelligent_router
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
-from typing import Dict, Any, Type
+from typing import Dict, Any, Type, List
 from pydantic import BaseModel, ValidationError, create_model
 from .deimos_wrapper import DeimosCompatibleChatOpenAI
 import json
 import re
 from deimos_router import get_router
+from blackbox import test_local
 import os
 from dotenv import load_dotenv
 
@@ -531,3 +532,308 @@ class AgentRuntime:
                 error_msgs.append(f"Field '{field}': {msg}")
             
             raise InputValidationError("; ".join(error_msgs))
+        
+    def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Run the agent with validated dictionary input and enforce output structure
+        
+        Args:
+            input_data: Dictionary containing the input data matching agent's InputConfig
+            
+        Returns:
+            Dict containing the validated output matching the agent's OutputConfig
+        """
+        if self.agent is None:
+            raise Exception("Agent not properly initialized")
+        
+        try:
+            # Validate input using Pydantic
+            print(f"[INFO] Validating input data against schema")
+            validated_input = self._validate_input_data(input_data)
+            print(f"[INFO] Input validation successful")
+            
+            # Convert to query string for the agent
+            if "array_input" in validated_input:
+                input_summary = f"Array Input: {json.dumps(validated_input['array_input'], indent=2)}"
+            else:
+                input_summary = f"Input Data: {json.dumps(validated_input, indent=2)}"
+            
+            query_string = f"""
+    Task: {self.config.agent.description}
+
+    {input_summary}
+
+    Available Tools: {', '.join(self.get_tool_names())}
+
+    Tool Usage Instructions:
+    - Use the available tools to gather information, perform calculations, or execute actions as needed
+    - You can call multiple tools in sequence if required
+    - Each tool call should be purposeful and contribute to processing the input data
+
+    Process:
+    1. Analyze the input data and determine what tools (if any) you need to use
+    2. Use the tools to process the input and gather the necessary information
+    3. Synthesize the results into a final answer based on the input data
+    4. Format your final answer as a JSON matching the required output schema:
+    {self._create_output_schema_description()}
+
+    Provide your response in the required output format.
+    """
+            
+            print(f"[INFO] Running agent with validated input")
+            print(f"[INFO] Available tools: {self.get_tool_names()}")
+            
+            # Run the agent using LangGraph's stream method for event tracking
+            config = {"configurable": {"thread_id": "main"}}
+            
+            # Collect analytics data during execution
+            import time
+            start_time = time.time()
+            events = []
+            tool_calls = []
+            llm_calls = []
+            
+            # Stream events for comprehensive analytics
+            for event in self.agent.stream(
+                {"messages": [("human", query_string)]},
+                config=config
+            ):
+                events.append(event)
+                
+                # Extract tool call information
+                if 'agent' in event and 'messages' in event['agent']:
+                    for message in event['agent']['messages']:
+                        if hasattr(message, 'tool_calls') and message.tool_calls:
+                            for tool_call in message.tool_calls:
+                                tool_calls.append({
+                                    'tool_name': tool_call['name'],
+                                    'args': tool_call['args'],
+                                    'call_id': tool_call['id'],
+                                    'timestamp': time.time()
+                                })
+                        
+                        # Extract LLM usage data
+                        if hasattr(message, 'response_metadata') and message.response_metadata:
+                            llm_calls.append({
+                                'model': message.response_metadata.get('model_name', 'unknown'),
+                                'tokens': message.response_metadata.get('token_usage', {}),
+                                'finish_reason': message.response_metadata.get('finish_reason', 'unknown'),
+                                'timestamp': time.time()
+                            })
+            
+            execution_time = time.time() - start_time
+            
+            # Get the final result from the last event
+            result = events[-1] if events else {}
+            
+            # Calculate comprehensive metrics
+            total_tokens = sum([call.get('tokens', {}).get('total_tokens', 0) for call in llm_calls])
+            prompt_tokens = sum([call.get('tokens', {}).get('prompt_tokens', 0) for call in llm_calls])
+            completion_tokens = sum([call.get('tokens', {}).get('completion_tokens', 0) for call in llm_calls])
+            
+            # Tool usage frequency
+            tool_usage_count = {}
+            for tc in tool_calls:
+                tool_usage_count[tc['tool_name']] = tool_usage_count.get(tc['tool_name'], 0) + 1
+            
+            # Create standardized analytics JSON with consistent schema
+            analytics_data = self._create_standardized_analytics(
+                input_data, validated_input, start_time, execution_time, 
+                events, tool_calls, llm_calls, total_tokens, prompt_tokens, 
+                completion_tokens, tool_usage_count, success=True, error_message=None
+            )
+            
+            print(f"[ANALYTICS_JSON] {json.dumps(analytics_data, indent=2)}")
+            with open(f"{self.config.agent.name}_output_json.json", "w") as f:
+                json.dump([analytics_data], f)
+            test_local(self.config.agent.name, f"{self.config.agent.name}_analytics")
+
+            # Extract the final message content from LangGraph response
+            raw_result = None
+            
+            # Try different possible structures for LangGraph response
+            if "agent" in result and "messages" in result["agent"] and result["agent"]["messages"]:
+                # Structure: {'agent': {'messages': [...]}}
+                last_message = result["agent"]["messages"][-1]
+                if hasattr(last_message, 'content'):
+                    raw_result = last_message.content
+                else:
+                    raw_result = str(last_message)
+            elif "messages" in result and result["messages"]:
+                # Structure: {'messages': [...]}
+                last_message = result["messages"][-1]
+                if hasattr(last_message, 'content'):
+                    raw_result = last_message.content
+                else:
+                    raw_result = str(last_message)
+            else:
+                # Fallback: convert entire result to string
+                raw_result = str(result)
+            
+            print(f"[INFO] Agent raw output: {raw_result}")
+            
+            # Validate and format the output (using existing methods)
+            try:
+                validated_output = self._validate_output_structure(raw_result)
+                print(f"[INFO] Direct validation successful")
+                return validated_output
+            except OutputValidationError as e:
+                print(f"[INFO] Direct validation failed: {e}. Attempting LLM-assisted formatting...")
+                validated_output = self._format_output_with_llm(str(raw_result))
+                print(f"[INFO] LLM-assisted validation successful")
+                return validated_output
+                    
+        except InputValidationError as e:
+            print(f"[ERROR] Input validation failed: {str(e)}")
+            # Log analytics for failed runs
+            self._log_failed_analytics(input_data, str(e), "input_validation_error")
+            return self._create_fallback_output(f"Input validation error: {str(e)}")
+            
+        except Exception as e:
+            print(f"[ERROR] Agent execution failed: {str(e)}")
+            # Log analytics for failed runs
+            self._log_failed_analytics(input_data, str(e), "execution_error")
+            return self._create_fallback_output(f"Error: {str(e)}")
+    
+    def validate_configuration(self) -> List[str]:
+        """
+        Validate the agent configuration and return any issues found
+        
+        Returns:
+            List of validation error messages (empty if valid)
+        """
+        issues = []
+        
+        # Check agent config
+        if not self.config.agent.name:
+            issues.append("Agent name is required")
+        if not self.config.agent.description:
+            issues.append("Agent description is required")
+        if not self.config.agent.output.fields:
+            issues.append("Agent must have at least one output field")
+        
+        # Check for duplicate tool names
+        tool_names = self.get_tool_names()
+        if len(tool_names) != len(set(tool_names)):
+            duplicates = [name for name in tool_names if tool_names.count(name) > 1]
+            issues.append(f"Duplicate tool names found: {set(duplicates)}")
+        
+        return issues
+    
+    def _log_failed_analytics(self, input_data: Dict[str, Any], error_message: str, error_type: str):
+        """Log analytics for failed agent runs using standardized schema"""
+        import time
+        current_time = time.time()
+        
+        # Create empty data structures for failed runs
+        empty_events = []
+        empty_tool_calls = []
+        empty_llm_calls = {}
+        empty_validated_input = {}
+        
+        failed_analytics = self._create_standardized_analytics(
+            input_data, empty_validated_input, current_time, 0,
+            empty_events, empty_tool_calls, empty_llm_calls, 0, 0, 0, {},
+            success=False, error_message=error_message, error_type=error_type
+        )
+        
+        # print(f"[ANALYTICS_JSON] {json.dumps(failed_analytics, indent=2)}")
+    
+    def _create_standardized_analytics(self, input_data: Dict[str, Any], validated_input: Dict[str, Any], 
+                                     start_time: float, execution_time: float, events: List, tool_calls: List, 
+                                     llm_calls: List, total_tokens: int, prompt_tokens: int, completion_tokens: int, 
+                                     tool_usage_count: Dict, success: bool = True, error_message: str = None, 
+                                     error_type: str = None) -> Dict[str, Any]:
+        """Create standardized analytics JSON with consistent schema for all agent types"""
+        import time
+        
+        # Ensure all required fields exist with defaults
+        def safe_get(data, key, default=""):
+            return data.get(key, default) if isinstance(data, dict) else default
+        
+        def safe_join(data_list, separator=","):
+            if not data_list:
+                return ""
+            return separator.join([str(item) for item in data_list if item is not None])
+        
+        # Calculate metrics with safe defaults
+        most_used_tool = max(tool_usage_count.items(), key=lambda x: x[1])[0] if tool_usage_count else ""
+        most_used_tool_count = max(tool_usage_count.values()) if tool_usage_count else 0
+        
+        # Get LLM model info safely
+        llm_model = "unknown"
+        llm_finish_reasons = ""
+        if llm_calls and len(llm_calls) > 0:
+            llm_model = llm_calls[0].get('model', 'unknown') if isinstance(llm_calls[0], dict) else 'unknown'
+            llm_finish_reasons = safe_join([call.get('finish_reason', 'unknown') for call in llm_calls if isinstance(call, dict)])
+        
+        # Standardized analytics schema - same columns for all agents
+        return {
+            # Core execution metrics (always present)
+            "agent_name": str(self.config.agent.name),
+            "execution_timestamp": int(start_time),
+            "execution_date": time.strftime('%Y-%m-%d', time.localtime(start_time)),
+            "execution_hour": time.strftime('%H:00:00', time.localtime(start_time)),
+            "execution_duration_ms": round(execution_time * 1000, 2),
+            "execution_duration_seconds": round(execution_time, 3),
+            "success": bool(success),
+            "error_message": str(error_message) if error_message else "",
+            "error_type": str(error_type) if error_type else "",
+            
+            # Performance metrics (always present)
+            "total_events": len(events) if events else 0,
+            "total_tool_calls": len(tool_calls) if tool_calls else 0,
+            "total_llm_calls": len(llm_calls) if llm_calls else 0,
+            "avg_tool_call_duration_ms": round((execution_time / max(len(tool_calls), 1)) * 1000, 2) if tool_calls else 0,
+            "avg_llm_call_duration_ms": round((execution_time / max(len(llm_calls), 1)) * 1000, 2) if llm_calls else 0,
+            
+            # Token usage (always present)
+            "total_tokens_used": int(total_tokens),
+            "prompt_tokens_used": int(prompt_tokens),
+            "completion_tokens_used": int(completion_tokens),
+            "tokens_per_second": round(total_tokens / max(execution_time, 0.001), 2),
+            "cost_estimate_usd": round(total_tokens * 0.0000015, 6),
+            
+            # Tool analytics (always present)
+            "tools_used_count": len(set([tc.get('tool_name', '') for tc in tool_calls])) if tool_calls else 0,
+            "tools_used_list": safe_join(sorted(set([tc.get('tool_name', '') for tc in tool_calls]))) if tool_calls else "",
+            "most_used_tool": str(most_used_tool),
+            "most_used_tool_count": int(most_used_tool_count),
+            
+            # Individual tool metrics (always present)
+            "tool_names": safe_join([tc.get('tool_name', '') for tc in tool_calls]) if tool_calls else "",
+            "tool_call_ids": safe_join([tc.get('call_id', '') for tc in tool_calls]) if tool_calls else "",
+            "tool_call_timestamps": safe_join([str(int(tc.get('timestamp', 0))) for tc in tool_calls]) if tool_calls else "",
+            
+            # LLM model info (always present)
+            "llm_model_used": str(llm_model),
+            "llm_finish_reasons": str(llm_finish_reasons),
+            "llm_call_timestamps": safe_join([str(int(call.get('timestamp', 0))) for call in llm_calls]) if llm_calls else "",
+            
+            # Input/Output metrics (always present)
+            "input_size_chars": len(str(input_data)),
+            "input_fields_count": len(input_data) if isinstance(input_data, dict) else 1,
+            "has_array_input": bool(safe_get(validated_input, 'array_input', False)),
+            
+            # Agent configuration (always present)
+            "agent_description": str(self.config.agent.description),
+            "available_tools_count": len(self.get_tool_names()),
+            "available_tools_list": safe_join(sorted(self.get_tool_names())),
+            "utilities_enabled": safe_join(self.config.utilities) if hasattr(self.config, 'utilities') and self.config.utilities else "",
+            "apis_configured": len(self.config.apis) if hasattr(self.config, 'apis') and self.config.apis else 0,
+            
+            # Efficiency metrics (always present)
+            "tools_per_second": round(len(tool_calls) / max(execution_time, 0.001), 2) if tool_calls else 0,
+            "events_per_second": round(len(events) / max(execution_time, 0.001), 2) if events else 0,
+            "efficiency_score": round((len(tool_calls) + len(llm_calls)) / max(execution_time, 0.001), 2),
+            
+            # Quality indicators (always present)
+            "has_validation_errors": not bool(success),
+            "output_validation_success": bool(success),
+            "llm_errors": 1 if error_type and "llm" in error_type.lower() else 0,
+            "tool_errors": 1 if error_type and "tool" in error_type.lower() else 0,
+            
+            # Raw data (always present)
+            "raw_input_data": str(input_data)[:500],
+            "execution_sequence": "->".join([tc.get('tool_name', '') for tc in tool_calls]) if tool_calls else ("failed" if not success else "none")
+        }
