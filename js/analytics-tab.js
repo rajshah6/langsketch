@@ -641,10 +641,10 @@ DATABRICKS_SCHEMA=default
               displayValue = value.toLocaleString();
               description = "Numeric value";
             }
-          } else if (typeof value === "string" && value.length > 100) {
+          } else if (typeof value === "string" && value.length > 100 && key !== "agent_description") {
             displayValue = value.substring(0, 100) + "...";
             description = "Long text (truncated)";
-          } else if (typeof value === "string" && value.includes(",")) {
+          } else if (typeof value === "string" && value.includes(",") && key !== "agent_description") {
             displayValue = value.split(",").length + " items";
             description = "Comma-separated list";
           }

@@ -570,7 +570,7 @@ function populateExecutionDetails() {
         } else {
           displayValue = value.toString();
         }
-      } else if (typeof value === "string" && value.length > 100) {
+      } else if (typeof value === "string" && value.length > 100 && key !== "agent_description") {
         displayValue = value.substring(0, 100) + "...";
       }
 
@@ -587,7 +587,7 @@ function populateExecutionDetails() {
       (detail) => `
     <tr>
       <td><strong>${detail.metric}</strong></td>
-      <td>${detail.value}</td>
+      <td data-field="${Object.keys(agentData).find(key => key !== 'allRows' && key !== 'tableName' && key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) === detail.metric)}">${detail.value}</td>
       <td>${detail.description}</td>
     </tr>
   `

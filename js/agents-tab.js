@@ -2431,7 +2431,6 @@
             <div class="agents-controls">
               <input type="text" class="agents-search-input" placeholder="Search agents by name..." id="agentsSearchInput">
               <button class="agents-add-button" id="agentsAddButton">+ Add Agent</button>
-              <button class="agents-analytics-button" id="agentsAnalyticsButton">📊 Open Analytics</button>
             </div>
           </div>
           <div class="agents-listing-section" id="agentsListingSection">
@@ -2456,14 +2455,6 @@
       if (addAgentButton) {
         addAgentButton.addEventListener('click', () => {
           this.handleAddAgent();
-        });
-      }
-
-      // Analytics button functionality
-      const analyticsButton = document.getElementById('agentsAnalyticsButton');
-      if (analyticsButton) {
-        analyticsButton.addEventListener('click', () => {
-          this.handleOpenAnalytics();
         });
       }
     }
@@ -3342,24 +3333,6 @@
       if (resetFilesBtn) {
         resetFilesBtn.addEventListener('click', () => this.resetDocuments());
       }
-    }
-
-    handleOpenAnalytics() {
-      console.log('Open Analytics button clicked');
-
-      // Get current project path from state
-      const S = this.S; // Access the shared state
-      const currentProjectPath = S.currentProjectPath;
-
-      if (!currentProjectPath) {
-        console.warn('No project selected. Cannot open analytics.');
-        // Could show a modal or notification here
-        return;
-      }
-
-      // Send IPC message to main process to open analytics window
-      const { ipcRenderer } = require('electron');
-      ipcRenderer.send('open-analytics', { projectPath: currentProjectPath });
     }
 
     async handleCreateAgent() {

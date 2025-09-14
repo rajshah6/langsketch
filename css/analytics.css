@@ -149,12 +149,14 @@
 .analytics-pane {
   display: none;
   padding: 2rem;
-  height: 100%;
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .analytics-pane.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
   animation: fadeIn 0.3s ease-in-out;
 }
 
@@ -393,8 +395,10 @@
 
 .analytics .table-wrapper {
   overflow-x: auto;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0 0 12px 12px;
 }
 
 .analytics .data-table {
@@ -419,6 +423,11 @@
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #f3f4f6;
   color: #374151;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  max-width: 300px;
+  vertical-align: top;
 }
 
 .analytics .data-table tbody tr:hover {
@@ -431,6 +440,16 @@
 
 .analytics .data-table tbody tr:nth-child(even):hover {
   background: #f3f4f6;
+}
+
+/* Special styling for agent description field */
+.analytics .data-table td:has-text("Agent Description") {
+  max-width: 500px;
+}
+
+.analytics .data-table td[data-field="agent_description"] {
+  max-width: 500px;
+  line-height: 1.5;
 }
 
 /* Responsive design */
