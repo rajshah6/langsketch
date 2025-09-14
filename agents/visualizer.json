@@ -1,0 +1,7 @@
+{
+  "color": "#96ceb4",
+  "name": "Visualizer",
+  "description": "Creates visualizations of training progress and results",
+  "type": "visualization",
+  "version": "1.0.0"
+}

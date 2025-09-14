@@ -1,0 +1,2580 @@
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+background-color: white;
+color: #333;
+overflow: hidden;
+}
+
+.title-bar {
+background-color: rgba(251, 144, 40, 255);
+height: 32px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 10px;
+-webkit-app-region: drag; /* Makes the title bar draggable */
+user-select: none;
+transition: -webkit-app-region 0.2s ease;
+}
+
+.title-bar.maximized {
+-webkit-app-region: no-drag; /* Disable dragging when maximized */
+}
+
+.title-bar-left {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.window-controls {
+display: flex;
+gap: 8px;
+-webkit-app-region: no-drag; /* Prevents dragging on controls */
+position: relative;
+padding: 4px;
+margin: -4px;
+cursor: pointer;
+--hover-active: 0;
+}
+
+.window-controls:hover {
+--hover-active: 1;
+}
+
+.window-controls .window-control-button {
+color: rgba(0, 0, 0, calc(var(--hover-active) * 0.7));
+transition: color 0.1s ease;
+}
+
+/* Ensure cursor is pointer in all areas */
+.window-controls * {
+cursor: pointer !important;
+}
+
+.window-control-button {
+width: 14px;
+height: 14px;
+border-radius: 50%;
+border: none;
+transition: all 0.2s ease;
+position: relative;
+font-size: 11px;
+color: transparent;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: 600;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+line-height: 1;
+}
+
+.window-control-button:hover {
+transform: scale(1.1);
+color: rgba(0, 0, 0, 0.7);
+}
+
+.window-control-button:active {
+transform: scale(0.95);
+}
+
+.close-button {
+background-color: #ff5f57;
+}
+
+.close-button:hover {
+background-color: #ff5f57;
+}
+
+.minimize-button {
+background-color: #ffbd2e;
+}
+
+.minimize-button:hover {
+background-color: #ffbd2e;
+}
+
+.maximize-button {
+background-color: #28ca42;
+}
+
+.maximize-button:hover {
+background-color: #28ca42;
+}
+
+.title-bar-right {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+padding-right: 10px;
+}
+
+.current-folder-display {
+background-color: rgba(255, 255, 255, 0.15);
+border: 1px solid rgba(255, 255, 255, 0.3);
+border-radius: 6px;
+padding: 4px 16px;
+min-width: 300px;
+max-width: 500px;
+height: 20px;
+text-align: center;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 14px;
+color: white;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+backdrop-filter: blur(10px);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.current-folder-display.no-project {
+font-style: italic;
+color: rgba(255, 255, 255, 0.6);
+}
+
+.title-bar-controls {
+display: flex;
+gap: 6px;
+align-items: center;
+-webkit-app-region: no-drag;
+position: absolute;
+right: 10px;
+top: 0;
+height: 32px;
+display: flex;
+align-items: center;
+}
+
+.control-widget {
+width: 20px;
+height: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+color: rgba(255, 255, 255, 0.8);
+font-size: 18px;
+}
+
+.control-widget.disabled {
+color: rgba(255, 255, 255, 0.3);
+cursor: not-allowed;
+pointer-events: none;
+}
+
+.control-widget.disabled:hover {
+transform: none;
+color: rgba(255, 255, 255, 0.3);
+}
+
+.control-widget.settings {
+width: 25px;
+height: 25px;
+font-size: 22px;
+margin-top: -2px;
+margin-left: 0;
+line-height: 1;
+padding: 0;
+}
+
+
+
+.control-widget:hover {
+color: white;
+transform: scale(1.05);
+}
+
+/* Project Navigation Header */
+.project-nav-header {
+background-color: #f8f9fa;
+border-bottom: 1px solid #e9ecef;
+padding: 0 40px;
+display: flex;
+align-items: center;
+gap: 0;
+height: 48px;
+}
+
+.nav-button {
+padding: 12px 24px;
+background-color: transparent;
+border: none;
+border-bottom: 3px solid transparent;
+color: #666;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 14px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+position: relative;
+}
+
+.nav-button:hover {
+color: #333;
+background-color: rgba(251, 144, 40, 0.05);
+}
+
+.nav-button.active {
+color: rgba(251, 144, 40, 255);
+border-bottom-color: rgba(251, 144, 40, 255);
+background-color: rgba(251, 144, 40, 0.05);
+}
+
+.nav-button.active:hover {
+color: rgba(251, 144, 40, 255);
+}
+
+/* Sketch Container */
+.sketch-container {
+width: 100%;
+height: 100%;
+display: flex;
+flex-direction: column;
+position: relative;
+margin-top: 0;
+margin-bottom: 0;
+z-index: 0; /* Ensure sketch container is below header/footer */
+max-width: none;
+}
+
+/* Sketch Toolbar */
+.sketch-toolbar {
+background-color: #f1f3f4;
+border-bottom: 1px solid #e9ecef;
+height: 82px;
+width: 100%;
+display: flex;
+align-items: center;
+padding: 0 0 0 8px;
+box-sizing: border-box;
+margin: 0;
+flex-shrink: 0;
+}
+
+/* Connect Button */
+.connect-button {
+width: 70px;
+height: 70px;
+border: 2px solid #666;
+border-radius: 12px;
+background-color: white;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+margin-right: 12px;
+flex-shrink: 0;
+}
+
+.connect-button:hover {
+background-color: #f8f9fa;
+transform: scale(1.02);
+}
+
+.connect-button:active {
+transform: scale(0.98);
+}
+
+.connect-icon {
+width: 40px;
+height: 40px;
+margin-bottom: 6px;
+object-fit: contain;
+}
+
+.connect-text {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 12px;
+font-weight: 500;
+color: #333;
+text-align: center;
+}
+
+/* Functions Section */
+.functions-section {
+flex: 1;
+height: 82px;
+background-color: white;
+border: 2px solid #e9ecef;
+border-radius: 8px;
+margin-left: 8px;
+margin-right: 8px;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+flex-shrink: 0;
+}
+
+.agents-section {
+position: fixed;
+right: 0;
+top: 169px;
+width: 220px;
+height: calc(100vh - 162px - 42px);
+background-color: white;
+border: 2px solid #000;
+border-right: none;
+border-radius: 0;
+padding: 20px;
+box-sizing: border-box;
+z-index: 10;
+}
+
+.agents-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.agents-subtitle {
+font-size: 18px;
+font-weight: 600;
+color: #333;
+margin-bottom: 0;
+}
+
+.agents-edit-btn {
+background-color: #fd7e14;
+color: white;
+border: none;
+border-radius: 6px;
+padding: 6px 12px;
+font-size: 12px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+flex-shrink: 0;
+}
+
+.agents-edit-btn:hover {
+background-color: #e8690b;
+transform: translateY(-1px);
+box-shadow: 0 2px 4px rgba(253, 126, 20, 0.3);
+}
+
+.agents-edit-btn:active {
+transform: translateY(0);
+box-shadow: 0 1px 2px rgba(253, 126, 20, 0.3);
+}
+
+.agents-list {
+display: flex;
+flex-direction: column;
+gap: 16px;
+overflow-y: auto;
+max-height: calc(100% - 60px);
+justify-content: center;
+min-height: calc(100% - 60px);
+}
+
+.agent-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+padding: 12px;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+background-color: #f8f9fa;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.agent-item:hover {
+background-color: #e9ecef;
+box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.agent-icon {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background-color: white;
+border: 2px solid #000;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+}
+
+.agent-icon-inner {
+width: 20px;
+height: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.agent-name {
+font-size: 12px;
+font-weight: 500;
+color: #333;
+text-align: center;
+max-width: 100%;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.functions-header {
+height: 24px;
+background-color: #f8f9fa;
+border-bottom: 1px solid #e9ecef;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 12px;
+flex-shrink: 0;
+}
+
+.functions-title {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 14px;
+font-weight: 600;
+color: #333;
+}
+
+.functions-controls {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.function-search {
+width: 120px;
+height: 22px;
+padding: 2px 8px;
+border: 1px solid #e9ecef;
+border-radius: 4px;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 11px;
+color: #333;
+background-color: white;
+outline: none;
+transition: border-color 0.2s ease;
+box-sizing: border-box;
+}
+
+.function-search:focus {
+border-color: #007bff;
+}
+
+.function-search::placeholder {
+color: #999;
+font-style: italic;
+}
+
+.manage-button {
+background-color: #007bff;
+color: white;
+border: none;
+border-radius: 4px;
+padding: 3px 10px;
+font-size: 11px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+flex-shrink: 0;
+}
+
+.manage-button:hover {
+background-color: #0056b3;
+transform: scale(1.05);
+}
+
+.manage-button:active {
+transform: scale(0.95);
+}
+
+.functions-list {
+flex: 1;
+padding: 8px 12px;
+display: flex;
+flex-direction: row;
+align-items: center;
+gap: 8px;
+overflow-x: auto;
+overflow-y: hidden;
+}
+
+.function-item {
+display: flex;
+align-items: center;
+gap: 8px;
+flex-shrink: 0;
+position: relative;
+padding: 8px 12px;
+background-color: white;
+border: 1px solid #e9ecef;
+border-radius: 6px;
+cursor: pointer;
+transition: all 0.2s ease;
+min-width: 180px;
+}
+
+.function-item:hover {
+background-color: #f8f9fa;
+border-color: #007bff;
+box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.function-item:active {
+transform: translateY(0);
+box-shadow: 0 1px 4px rgba(0, 123, 255, 0.1);
+}
+
+.function-logo {
+width: 24px;
+height: 24px;
+background-color: #000;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-family: 'Courier New', monospace;
+font-size: 14px;
+font-weight: bold;
+flex-shrink: 0;
+}
+
+.function-info {
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+
+.function-name {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 13px;
+font-weight: 500;
+color: #333;
+white-space: nowrap;
+}
+
+.function-route {
+font-family: 'Courier New', monospace;
+font-size: 11px;
+color: #666;
+white-space: nowrap;
+}
+
+.function-delete-btn {
+position: absolute;
+top: 4px;
+right: 4px;
+width: 16px;
+height: 16px;
+background-color: #dc3545;
+color: white;
+border: none;
+border-radius: 50%;
+font-size: 12px;
+font-weight: bold;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+line-height: 1;
+transition: all 0.2s ease;
+z-index: 10;
+}
+
+.function-delete-btn:hover {
+background-color: #c82333;
+transform: scale(1.1);
+}
+
+.function-delete-btn:active {
+transform: scale(0.9);
+}
+
+/* Functions Management Modal */
+.functions-modal {
+width: 800px;
+max-width: 90vw;
+height: 600px;
+max-height: 90vh;
+display: flex;
+flex-direction: column;
+}
+
+.modal-content {
+flex: 1;
+overflow: visible; /* Changed from overflow-y: auto to allow dropdown to be visible */
+padding: 20px;
+position: relative;
+}
+
+.folder-navigation {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+padding: 15px;
+background-color: #f8f9fa;
+border-radius: 8px;
+}
+
+.current-path {
+font-family: 'Courier New', monospace;
+font-size: 14px;
+color: #333;
+background-color: white;
+padding: 8px 12px;
+border-radius: 4px;
+border: 1px solid #e9ecef;
+flex: 1;
+margin-right: 15px;
+overflow: hidden;
+white-space: nowrap;
+text-overflow: ellipsis;
+min-width: 0;
+}
+
+.folder-buttons {
+display: flex;
+gap: 10px;
+}
+
+.file-list {
+max-height: 300px;
+overflow-y: auto;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+background-color: white;
+}
+
+.file-item {
+display: flex;
+align-items: center;
+padding: 12px 15px;
+border-bottom: 1px solid #f1f3f4;
+cursor: pointer;
+transition: background-color 0.2s ease;
+}
+
+.file-item:hover {
+background-color: #f8f9fa;
+}
+
+.file-item:last-child {
+border-bottom: none;
+}
+
+.file-icon {
+margin-right: 12px;
+font-size: 18px;
+}
+
+.file-name {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 14px;
+color: #333;
+flex: 1;
+}
+
+.function-selection {
+margin-top: 20px;
+padding: 20px;
+background-color: #f8f9fa;
+border-radius: 8px;
+border: 2px solid #007bff;
+box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.function-selection h3 {
+margin: 0 0 15px 0;
+font-size: 16px;
+color: #333;
+}
+
+.functions-checkboxes {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.function-checkbox-item {
+display: flex;
+align-items: center;
+padding: 8px 12px;
+background-color: white;
+border-radius: 6px;
+border: 1px solid #e9ecef;
+}
+
+.function-checkbox-item input[type="checkbox"] {
+margin-right: 12px;
+}
+
+.function-checkbox-item label {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 14px;
+color: #333;
+cursor: pointer;
+flex: 1;
+}
+
+.function-checkbox-item input[type="checkbox"]:disabled {
+cursor: not-allowed;
+opacity: 0.5;
+}
+
+.function-checkbox-item input[type="checkbox"]:disabled + label {
+cursor: not-allowed;
+}
+
+.modal-footer {
+flex-shrink: 0;
+border-top: 1px solid #e9ecef;
+background-color: white;
+padding: 20px;
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+}
+
+/* Function Details Modal */
+.function-details-modal {
+width: 700px;
+max-width: 90vw;
+height: 500px;
+max-height: 90vh;
+}
+
+.function-details-info {
+margin-bottom: 20px;
+padding: 15px;
+background-color: #f8f9fa;
+border-radius: 8px;
+border: 1px solid #e9ecef;
+}
+
+.detail-row {
+display: flex;
+margin-bottom: 12px;
+align-items: flex-start;
+}
+
+.detail-row:last-child {
+margin-bottom: 0;
+}
+
+.detail-label {
+font-weight: 600;
+color: #333;
+width: 120px;
+flex-shrink: 0;
+margin-right: 10px;
+}
+
+.detail-value {
+color: #666;
+font-family: 'Courier New', monospace;
+word-break: break-all;
+flex: 1;
+}
+
+.function-code-section h3 {
+margin: 0 0 15px 0;
+font-size: 16px;
+color: #333;
+}
+
+.code-snippet {
+background-color: #2d3748;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+padding: 15px;
+font-family: 'Courier New', monospace;
+font-size: 13px;
+line-height: 1.4;
+color: #e2e8f0;
+white-space: pre-wrap;
+height: 250px;
+overflow-y: auto;
+overflow-x: auto;
+word-wrap: break-word;
+}
+
+/* Custom Modal Styles */
+.custom-confirm-modal,
+.custom-alert-modal {
+width: 400px;
+max-width: 90vw;
+background-color: white;
+border-radius: 8px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+overflow: hidden;
+}
+
+.custom-confirm-modal .modal-header,
+.custom-alert-modal .modal-header {
+background-color: #f8f9fa;
+padding: 20px 20px 15px 20px;
+border-bottom: 1px solid #e9ecef;
+}
+
+.custom-confirm-modal .modal-header h3,
+.custom-alert-modal .modal-header h3 {
+margin: 0;
+font-size: 18px;
+color: #333;
+font-weight: 600;
+}
+
+.custom-confirm-modal .modal-content,
+.custom-alert-modal .modal-content {
+padding: 20px;
+text-align: center;
+}
+
+.custom-confirm-modal .modal-content p,
+.custom-alert-modal .modal-content p {
+margin: 0;
+font-size: 16px;
+color: #555;
+line-height: 1.5;
+}
+
+.custom-confirm-modal .modal-footer,
+.custom-alert-modal .modal-footer {
+padding: 15px 20px 20px 20px;
+display: flex;
+justify-content: center;
+gap: 12px;
+border-top: 1px solid #e9ecef;
+background-color: #f8f9fa;
+}
+
+.btn-danger {
+background-color: #dc3545;
+color: white;
+border: none;
+padding: 8px 16px;
+border-radius: 4px;
+font-size: 14px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+background-color: #c82333;
+}
+
+/* Import Button */
+.import-button {
+width: 82px;
+height: 82px;
+border: none;
+border-radius: 0;
+background-color: #bbb;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+margin-right: 0;
+flex-shrink: 0;
+}
+
+.import-button:hover {
+background-color: #666;
+transform: scale(1.02);
+}
+
+.import-button:active {
+transform: scale(0.98);
+}
+
+.upload-icon {
+font-size: 24px;
+color: white;
+margin-bottom: 6px;
+font-weight: bold;
+}
+
+.import-text {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 12px;
+font-weight: 500;
+color: white;
+text-align: center;
+}
+
+/* Compile Button */
+.compile-button {
+width: 82px;
+height: 82px;
+border: 2px solid #28a745;
+border-radius: 0;
+background-color: #28a745;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+margin-right: 0;
+flex-shrink: 0;
+}
+
+.compile-button:hover {
+background-color: #218838;
+border-color: #218838;
+transform: scale(1.02);
+}
+
+.compile-button:active {
+transform: scale(0.98);
+}
+
+.checkmark-icon {
+font-size: 24px;
+color: white;
+margin-bottom: 6px;
+font-weight: bold;
+}
+
+.compile-text {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 12px;
+font-weight: 500;
+color: white;
+text-align: center;
+}
+
+/* Intermediate Button */
+.test-button {
+width: 82px;
+height: 82px;
+border: 2px solid #17a2b8;
+border-radius: 0;
+background-color: #17a2b8;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+margin-right: 0;
+flex-shrink: 0;
+position: relative;
+z-index: 100000;
+}
+
+.test-button:hover {
+background-color: #138496;
+border-color: #138496;
+transform: scale(1.02);
+}
+
+.test-button:active {
+transform: scale(0.98);
+}
+
+.test-icon {
+margin-bottom: 6px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.test-text {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 16px;
+font-weight: 600;
+color: white;
+text-align: center;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+/* Sketch Canvas */
+.sketch-canvas {
+flex: 1;
+background-color: #f8f9fa;
+width: 100%;
+position: relative;
+overflow: visible; /* Changed from hidden to visible so trash can is not clipped */
+margin-top: 0;
+margin-bottom: 0;
+padding: 8px 34px 20px 7px;
+box-sizing: border-box;
+z-index: 0; /* Lowest z-index - below everything */
+}
+
+.canvas-container {
+width: calc(100% - 200px);
+height: 100%;
+background-color: white;
+border: 2px solid #e9ecef;
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+overflow: hidden; /* Viewport - no scrollbars */
+position: relative;
+z-index: 0; /* Lowest z-index - below everything */
+/* Create new stacking context for proper z-index handling */
+isolation: isolate;
+}
+
+.canvas-grid {
+width: 100%;
+height: 100%;
+background-image: 
+linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+background-size: 20px 20px;
+background-position: 0 0;
+position: relative;
+min-height: 100%;
+min-width: 100%;
+pointer-events: none; /* Let canvas-content handle events */
+z-index: 0; /* Lowest z-index - below everything */
+}
+
+/* Grid pattern for better visual reference */
+.canvas-grid::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-image: 
+linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+background-size: 100px 100px;
+background-position: 0 0;
+pointer-events: none;
+}
+
+/* Canvas Items */
+.canvas-item {
+position: absolute;
+cursor: grab;
+user-select: none;
+z-index: 5; /* Very low z-index - above canvas but below UI elements */
+transition: transform 0.1s ease;
+}
+
+.canvas-item:hover {
+cursor: grab;
+}
+
+.canvas-item.dragging {
+opacity: 0.7;
+z-index: 999999;
+cursor: grabbing;
+pointer-events: none;
+box-shadow: 0 0 25px rgba(0, 123, 255, 0.8);
+border: 2px solid rgba(0, 123, 255, 0.6);
+/* Force to highest stacking context without affecting layout */
+position: absolute;
+}
+
+.canvas-item.dragging .function-logo {
+transform: scale(1.3);
+transition: transform 0.1s ease;
+}
+
+.canvas-item.dragging .agent-icon {
+transform: scale(1.3);
+transition: transform 0.1s ease;
+}
+
+.canvas-item.dragging-to-trash {
+opacity: 0.6;
+z-index: 999999;
+box-shadow: 0 0 30px rgba(220, 53, 69, 1);
+/* Visual feedback when dragging to trash */
+filter: hue-rotate(0deg) saturate(1.5);
+border: 2px solid rgba(220, 53, 69, 0.8);
+animation: pulse 0.5s ease-in-out infinite alternate;
+/* Force to highest stacking context without affecting layout */
+position: absolute;
+}
+
+.canvas-item.dragging-to-trash .function-logo {
+transform: scale(1.4);
+transition: transform 0.1s ease;
+}
+
+.canvas-item.dragging-to-trash .agent-icon {
+transform: scale(1.4);
+transition: transform 0.1s ease;
+}
+
+@keyframes pulse {
+0% { transform: scale(1.4); }
+100% { transform: scale(1.5); }
+}
+
+/* Visual feedback for new items being created */
+.canvas-item.new-item {
+animation: newItemPulse 0.5s ease-out;
+}
+
+@keyframes newItemPulse {
+0% { transform: scale(0.8); opacity: 0.5; }
+100% { transform: scale(1); opacity: 1; }
+}
+
+.canvas-item.function-item {
+background-color: white;
+border: 2px solid #e9ecef;
+border-radius: 8px;
+padding: 12px;
+width: 160px;
+min-width: 160px;
+max-width: 160px;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.canvas-item.agent-item {
+background-color: white;
+border: 2px solid #87ceeb;
+border-radius: 8px;
+padding: 12px;
+width: 100px;
+min-width: 100px;
+max-width: 100px;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.canvas-item.function-item .function-logo {
+width: 20px;
+height: 20px;
+background-color: #000;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 12px;
+font-weight: bold;
+margin-bottom: 8px;
+}
+
+.canvas-item.agent-item .agent-icon {
+width: 30px;
+height: 30px;
+border-radius: 50%;
+background-color: white;
+border: 2px solid #000;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-bottom: 8px;
+}
+
+.canvas-item .item-name {
+font-size: 12px;
+font-weight: 500;
+color: #333;
+text-align: center;
+margin-bottom: 4px;
+}
+
+.canvas-item .item-details {
+font-size: 10px;
+color: #666;
+text-align: center;
+}
+
+/* Flow Validation Popup */
+.flow-notification {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) scale(0.9);
+background: white;
+border-radius: 20px;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+z-index: 1000000;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+width: 450px;
+opacity: 0;
+visibility: hidden;
+border: 1px solid #e5e7eb;
+}
+
+.flow-notification.show {
+transform: translate(-50%, -50%) scale(1);
+opacity: 1;
+visibility: visible;
+}
+
+.flow-notification-content {
+padding: 60px 40px 40px 40px;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 32px;
+text-align: center;
+position: relative;
+min-height: 200px;
+}
+
+.flow-notification-message {
+font-size: 28px;
+font-weight: 700;
+color: #1f2937;
+line-height: 1.3;
+margin: 0;
+letter-spacing: -0.025em;
+text-align: center;
+max-width: 100%;
+}
+
+.flow-notification-close {
+position: absolute;
+top: 20px;
+right: 20px;
+background: #ffffff;
+border: 2px solid #e5e7eb;
+width: 36px;
+height: 36px;
+border-radius: 50%;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 20px;
+color: #6b7280;
+font-weight: 600;
+transition: all 0.2s ease;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flow-notification-close:hover {
+background: #f9fafb;
+border-color: #d1d5db;
+color: #374151;
+transform: scale(1.1);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.flow-notification-close:active {
+transform: scale(0.95);
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Connectors */
+.connector {
+position: absolute;
+cursor: pointer;
+z-index: 60;
+transition: all 0.2s ease;
+}
+
+.connector:hover {
+transform: scale(1.1);
+}
+
+/* Right Connector (Circle) */
+.right-connector {
+right: -8px;
+top: 50%;
+transform: translateY(-50%);
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background-color: white;
+border: 2px solid #000;
+}
+
+/* Connected state fills the circle */
+.right-connector.connected {
+background-color: #000;
+}
+
+.right-connector:hover {
+background-color: #f0f0f0;
+}
+
+/* Override hover for connected connectors */
+.right-connector.connected:hover {
+background-color: #000 !important;
+border-color: #000 !important;
+transform: translateY(-50%) scale(1.1);
+}
+
+/* Activated circle state (when stop button is active) */
+.right-connector.activated {
+background-color: #FFB6C1;
+border-color: #DC143C;
+}
+
+.right-connector.activated:hover {
+background-color: #FF69B4;
+border-color: #B22222;
+}
+
+/* Left Connector (Triangle) */
+.left-connector {
+left: -8px;
+top: 50%;
+transform: translateY(-50%);
+width: 16px;
+height: 16px;
+background: none;
+position: absolute;
+z-index: 2;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.left-connector svg {
+width: 16px;
+height: 16px;
+}
+
+/* Connected triangle fill override (fallback for when JS sets fill) */
+.left-connector.connected svg polygon {
+fill: #000 !important;
+stroke: #000 !important;
+}
+
+/* Override hover for connected triangle */
+.left-connector.connected:hover svg polygon {
+fill: #000 !important;
+stroke: #000 !important;
+}
+
+/* Activated triangle state (when start button is active) */
+.left-connector.activated svg polygon {
+fill: #90EE90;
+stroke: #228B22;
+}
+
+.left-connector.activated:hover svg polygon {
+fill: #7CFC00;
+stroke: #32CD32;
+}
+
+/* Show pointer cursor when start button is active and triangle can be activated */
+.left-connector:not(.connected):not(.activated) {
+cursor: pointer;
+}
+
+.left-connector.connected {
+cursor: not-allowed;
+}
+
+/* Show pointer cursor when stop button is active and circle can be activated */
+.right-connector:not(.connected):not(.activated) {
+cursor: pointer;
+}
+
+.right-connector.connected {
+cursor: not-allowed;
+}
+
+/* Connection Lines */
+.connection-line {
+position: absolute;
+pointer-events: none;
+z-index: 1000; /* Higher z-index to ensure visibility */
+overflow: visible;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+}
+
+/* Hide connection lines outside canvas area */
+.connection-line {
+transition: opacity 0.1s ease;
+}
+
+/* Make connection lines fade out outside canvas bounds */
+.connection-line:not(.dragging) {
+opacity: 0.6;
+}
+
+/* When dragging, full opacity for better visibility */
+.connection-line.dragging {
+opacity: 1;
+}
+
+/* Add a subtle shadow to make lines more visible within canvas */
+.connection-line line {
+filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Enhance visibility of connection lines within canvas bounds */
+.connection-line:not(.dragging) line {
+stroke-opacity: 0.8;
+}
+
+.connection-line.dragging line {
+stroke-opacity: 1;
+}
+
+.connection-line svg {
+width: 100%;
+height: 100%;
+overflow: visible;
+}
+
+.connection-line line {
+stroke-dasharray: 0;
+transition: all 0.2s ease;
+}
+
+.connection-line:hover line {
+stroke: #007bff;
+stroke-width: 3;
+}
+
+.connection-line.dragging {
+opacity: 0.7;
+z-index: 10; /* Higher than normal but still below most UI elements */
+/* Force to higher stacking context without affecting layout */
+position: absolute;
+transform: translateZ(1px);
+}
+
+/* Connection dragging cursor */
+.connecting-cursor {
+cursor: crosshair !important;
+}
+
+.connecting-cursor * {
+cursor: crosshair !important;
+}
+
+/* Visual feedback for connection dragging */
+.connection-preview {
+position: absolute;
+pointer-events: none;
+z-index: 1001; /* Higher than connection lines */
+overflow: visible;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+}
+
+.connection-preview svg {
+width: 100%;
+height: 100%;
+overflow: visible;
+}
+
+.connection-preview line {
+stroke: #000;
+stroke-width: 3;
+stroke-dasharray: 5,5;
+opacity: 1;
+}
+
+/* Drawing Mode */
+.canvas-grid.drawing-mode {
+cursor: crosshair;
+}
+
+.canvas-grid.drawing-mode .canvas-item {
+cursor: crosshair;
+}
+
+/* Canvas Content */
+.canvas-content {
+position: absolute;
+top: 60px;
+left: 0;
+right: 0;
+bottom: 0;
+overflow: visible; /* Allow content to extend beyond viewport */
+cursor: grab;
+transition: transform 0.1s ease;
+will-change: transform; /* Hardware acceleration */
+transform-origin: 0 0; /* Transform from top-left */
+/* Infinite canvas size */
+min-width: 10000px;
+min-height: 10000px;
+width: 10000px;
+height: 10000px;
+pointer-events: auto; /* Ensure events work */
+z-index: 0; /* Lowest z-index - below everything */
+/* Create new stacking context for proper z-index handling */
+isolation: isolate;
+}
+
+.canvas-content:active {
+cursor: grabbing;
+}
+
+.canvas-content.panning {
+cursor: grabbing;
+}
+
+.canvas-tools {
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 15px 20px;
+z-index: 100; /* Ensure tools are above everything */
+pointer-events: none;
+}
+
+.canvas-tools-left {
+pointer-events: auto;
+}
+
+.canvas-tools-right {
+display: flex;
+align-items: center;
+gap: 8px;
+pointer-events: auto;
+}
+
+.sketch-name-input {
+width: 200px;
+padding: 8px 12px;
+border: 1px solid #e9ecef;
+border-radius: 6px;
+font-size: 14px;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+background-color: white;
+outline: none;
+transition: border-color 0.2s ease;
+}
+
+.sketch-name-input:focus {
+border-color: #007bff;
+box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.sketch-name-input::placeholder {
+color: #999;
+font-style: italic;
+}
+
+.zoom-btn {
+width: 32px;
+height: 32px;
+background-color: white;
+border: 1px solid #e9ecef;
+border-radius: 6px;
+color: #666;
+font-size: 18px;
+font-weight: bold;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+}
+
+.zoom-btn:hover {
+background-color: #f8f9fa;
+border-color: #007bff;
+color: #007bff;
+}
+
+.zoom-btn:active {
+transform: scale(0.95);
+}
+
+.fullscreen-btn {
+width: 32px;
+height: 32px;
+background-color: white;
+border: 1px solid #e9ecef;
+border-radius: 6px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+padding: 0;
+}
+
+.fullscreen-btn:hover {
+background-color: #f8f9fa;
+border-color: #007bff;
+}
+
+.fullscreen-btn:active {
+transform: scale(0.95);
+}
+
+.fullscreen-icon {
+width: 16px;
+height: 16px;
+object-fit: contain;
+}
+
+.start-btn {
+background-color: #32CD32;
+color: white;
+border: 1.5px solid #000;
+border-radius: 8px;
+padding: 8px;
+width: 40px;
+height: 40px;
+cursor: pointer;
+font-size: 11px;
+font-weight: 500;
+transition: background-color 0.2s ease;
+margin-right: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: center;
+}
+
+.start-btn:hover {
+background-color: #228B22;
+}
+
+.start-btn.active {
+background-color: #228B22;
+box-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
+}
+
+.stop-btn {
+background-color: #FF4444;
+color: white;
+border: 1.5px solid #000;
+border-radius: 8px;
+padding: 8px;
+width: 40px;
+height: 40px;
+cursor: pointer;
+font-size: 11px;
+font-weight: 500;
+transition: background-color 0.2s ease;
+margin-right: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: center;
+}
+
+.stop-btn:hover {
+background-color: #CC0000;
+}
+
+.stop-btn.active {
+background-color: #CC0000;
+box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.trash-can-btn {
+position: absolute;
+bottom: 20px;
+right: 20px;
+width: 48px;
+height: 48px;
+background-color: #dc3545;
+border: 3px solid #c82333;
+border-radius: 8px;
+color: white;
+font-size: 16px;
+cursor: default;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+z-index: 1000;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+/* Higher z-index to ensure visibility above canvas content */
+transform: translateZ(0);
+}
+
+.trash-icon {
+width: 16px;
+height: 16px;
+object-fit: contain;
+}
+
+/* No hover effects - this is a drop zone, not a button */
+
+.trash-can-btn.drag-over {
+background-color: #c82333;
+transform: scale(1.3);
+box-shadow: 0 0 40px rgba(220, 53, 69, 1);
+border: 4px solid #fff;
+/* Make it clear this is an active drop zone */
+animation: dropZonePulse 0.6s ease-in-out;
+/* Additional visual feedback */
+filter: brightness(1.4);
+/* Higher z-index when active but still below dragged items */
+z-index: 1500;
+}
+
+@keyframes dropZonePulse {
+0% { transform: scale(1.1); }
+50% { transform: scale(1.2); }
+100% { transform: scale(1.1); }
+}
+
+/* View Content Styles */
+.sketch-view {
+padding: 20px 40px;
+text-align: left;
+}
+
+/* Agent Tab styles are now handled by the AgentsTab component */
+
+.sketch-view h2 {
+color: #333;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 24px;
+font-weight: 600;
+margin-bottom: 16px;
+}
+
+.sketch-view p {
+color: #666;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 16px;
+line-height: 1.5;
+}
+
+.control-widget:active {
+transform: scale(0.95);
+}
+
+.main-content {
+height: 100vh;
+background-color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+}
+
+/* When project is open, adjust alignment for content flow */
+.main-content.has-project {
+align-items: stretch;
+justify-content: flex-start;
+height: 86vh;
+width: 100%;
+}
+
+/* Agent Tab styles are now handled by the AgentsTab component */
+
+.bottom-lip {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+height: 28px;
+background-color: transparent;
+border-top: 2px solid rgba(251, 144, 40, 255);
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding-left: 20px;
+padding-right: 20px;
+z-index: 5; /* Below footer elements but above background */
+}
+
+/* Footer background that extends fully */
+.footer-background {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+height: 28px;
+background-color: white;
+z-index: 1;
+}
+
+.bottom-lip-text {
+font-family: "Permanent Marker", cursive;
+font-weight: 400;
+color: rgba(251, 144, 40, 255);
+font-size: 16px;
+letter-spacing: 0.05em;
+}
+
+.content-placeholder {
+color: #ccc;
+font-size: 18px;
+text-align: center;
+}
+
+.open-folder-section {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 20px;
+text-align: center;
+}
+
+.open-folder-button {
+background-color: white;
+color: rgba(251, 144, 40, 255);
+border: none;
+padding: 16px 32px;
+font-size: 18px;
+font-weight: 600;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+border-radius: 8px;
+cursor: pointer;
+transition: all 0.2s ease;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.open-folder-button:hover {
+background-color: #f8f8f8;
+transform: translateY(-2px);
+box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.open-folder-button:active {
+transform: translateY(0);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.open-folder-text {
+color: #666;
+font-size: 16px;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+line-height: 1.4;
+max-width: 400px;
+}
+
+/* Settings Content Styles */
+.settings-content {
+height: calc(100vh - 60px);
+background-color: white;
+display: flex;
+flex-direction: column;
+padding: 40px;
+box-sizing: border-box;
+overflow-y: auto;
+}
+
+.settings-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 40px;
+}
+
+.settings-header h1 {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+font-size: 32px;
+font-weight: 600;
+color: #333;
+margin: 0;
+}
+
+.settings-close-btn {
+background: none;
+border: none;
+font-size: 32px;
+color: #999;
+cursor: pointer;
+padding: 8px;
+border-radius: 6px;
+transition: all 0.2s ease;
+width: 48px;
+height: 48px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.settings-close-btn:hover {
+background-color: #f5f5f5;
+color: #666;
+}
+
+.settings-list {
+display: flex;
+flex-direction: column;
+gap: 0;
+width: 100%;
+}
+
+.settings-item {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+font-size: 18px;
+font-weight: 500;
+color: #333;
+padding: 20px 0;
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+position: relative;
+gap: 20px;
+}
+
+.settings-item::after {
+content: '';
+position: absolute;
+top: 48px;
+left: 0;
+right: 0;
+height: 2px;
+background-color: rgba(251, 144, 40, 255);
+width: 100%;
+}
+
+.settings-item-content {
+display: flex;
+flex-direction: column;
+gap: 8px;
+flex: 1;
+position: relative;
+}
+
+.settings-item-title {
+font-weight: 500;
+padding-bottom: 8px;
+display: block;
+margin-bottom: 8px;
+width: 100%;
+position: relative;
+}
+
+.settings-item-subtitle {
+font-size: 14px;
+color: #999;
+font-weight: 600;
+font-style: italic;
+margin-top: 8px;
+padding-top: 8px;
+}
+
+.add-button {
+background-color: #f5f5f5;
+border: 1px solid #ccc;
+color: #666;
+padding: 4px 12px;
+border-radius: 6px;
+cursor: pointer;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+font-size: 14px;
+font-weight: 500;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+gap: 6px;
+height: 28px;
+margin-top: -4px;
+align-self: flex-start;
+position: relative;
+z-index: 1;
+}
+
+.add-button:hover {
+background-color: #e8e8e8;
+border-color: #bbb;
+color: #555;
+}
+
+/* Modal Styles */
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(0, 0, 0, 0.5);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+}
+
+.modal {
+background-color: white;
+border-radius: 12px;
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+width: 90%;
+max-width: 500px;
+max-height: 90vh;
+overflow: visible; /* Changed from overflow-y: auto to allow dropdown to be visible */
+}
+
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 24px 24px 16px 24px;
+border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-header h2 {
+margin: 0;
+font-size: 20px;
+font-weight: 600;
+color: #333;
+}
+
+.modal-close-btn {
+background: none;
+border: none;
+font-size: 24px;
+color: #999;
+cursor: pointer;
+padding: 4px;
+border-radius: 4px;
+transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+background-color: #f5f5f5;
+color: #666;
+}
+
+.modal-content {
+padding: 24px;
+}
+
+.form-group {
+margin-bottom: 20px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: 500;
+color: #333;
+font-size: 14px;
+}
+
+.provider-dropdown {
+position: relative;
+}
+
+.custom-select {
+position: relative;
+width: 100%;
+}
+
+.select-selected {
+background-color: white;
+padding: 12px 16px;
+border: 1px solid #ddd;
+border-radius: 8px;
+cursor: pointer;
+user-select: none;
+transition: all 0.2s ease;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.select-selected:after {
+content: '';
+position: absolute;
+right: 12px;
+top: 50%;
+transform: translateY(-50%);
+width: 0;
+height: 0;
+border: 5px solid transparent;
+border-color: #666 transparent transparent transparent;
+transition: transform 0.2s ease;
+}
+
+.select-selected.select-arrow-active:after {
+transform: translateY(-50%) rotate(180deg);
+}
+
+.select-selected:hover {
+border-color: #bbb;
+}
+
+.select-items {
+position: absolute;
+background-color: white;
+top: 100%;
+left: 0;
+right: 0;
+z-index: 10000000;
+border: 1px solid #ddd;
+border-top: none;
+border-radius: 0 0 8px 8px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+max-height: 200px;
+overflow-y: auto;
+width: 100%;
+margin-top: 0;
+}
+
+.select-hide {
+display: none;
+}
+
+.select-option {
+padding: 12px 16px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 12px;
+transition: background-color 0.2s ease;
+}
+
+.select-option:hover {
+background-color: #f8f9fa;
+}
+
+.select-option.selected {
+background-color: rgba(251, 144, 40, 0.1);
+color: rgba(251, 144, 40, 255);
+}
+
+.select-option.disabled {
+opacity: 0.5;
+cursor: not-allowed;
+background-color: #f5f5f5;
+}
+
+.select-option.disabled:hover {
+background-color: #f5f5f5;
+}
+
+.provider-logo {
+width: 24px;
+height: 24px;
+object-fit: contain;
+border-radius: 4px;
+flex-shrink: 0;
+}
+
+
+
+#apiKeyInput {
+width: 100%;
+padding: 12px 16px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 14px;
+background-color: white;
+transition: border-color 0.2s ease;
+box-sizing: border-box;
+}
+
+#apiKeyInput:focus {
+outline: none;
+border-color: rgba(251, 144, 40, 255);
+box-shadow: 0 0 0 3px rgba(251, 144, 40, 0.1);
+}
+
+
+
+#workspaceUrlInput {
+width: 100%;
+padding: 12px 16px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 14px;
+background-color: white;
+transition: border-color 0.2s ease;
+box-sizing: border-box;
+}
+
+#workspaceUrlInput:focus {
+outline: none;
+border-color: rgba(251, 144, 40, 255);
+box-shadow: 0 0 0 3px rgba(251, 144, 40, 0.1);
+}
+
+#databricksTokenInput {
+width: 100%;
+padding: 12px 16px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 14px;
+background-color: white;
+transition: border-color 0.2s ease;
+box-sizing: border-box;
+}
+
+#databricksTokenInput:focus {
+outline: none;
+border-color: rgba(251, 144, 40, 255);
+box-shadow: 0 0 0 3px rgba(251, 144, 40, 0.1);
+}
+
+.modal-footer {
+display: flex;
+justify-content: flex-end;
+gap: 12px;
+padding: 16px 24px 24px 24px;
+border-top: 1px solid #e5e5e5;
+}
+
+.btn {
+padding: 10px 20px;
+border: none;
+border-radius: 6px;
+font-size: 14px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.btn-primary {
+background-color: rgba(251, 144, 40, 255);
+color: white;
+}
+
+.btn-primary:hover {
+background-color: rgba(251, 144, 40, 0.9);
+}
+
+.btn-secondary {
+background-color: #f5f5f5;
+color: #666;
+border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+background-color: #e8e8e8;
+}
+
+/* Test JSON Modal Styles */
+.test-json-modal {
+width: 700px;
+max-width: 90vw;
+height: 500px;
+max-height: 90vh;
+}
+
+.test-json-info {
+margin-bottom: 20px;
+}
+
+.test-json-info p {
+margin: 0 0 15px 0;
+font-size: 14px;
+color: #666;
+}
+
+.json-preview {
+background-color: #f8f9fa;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+padding: 15px;
+max-height: 300px;
+overflow-y: auto;
+}
+
+.json-preview pre {
+margin: 0;
+font-family: 'Courier New', monospace;
+font-size: 12px;
+line-height: 1.4;
+color: #333;
+white-space: pre-wrap;
+word-wrap: break-word;
+}
+
+/* LLM Keys List */
+.llm-keys-list {
+margin-top: 16px;
+}
+
+.llm-key-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 12px 16px;
+background-color: #f8f9fa;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+margin-bottom: 8px;
+gap: 16px;
+}
+
+.llm-key-info {
+display: flex;
+align-items: center;
+gap: 12px;
+flex: 0 0 auto;
+}
+
+.api-key-preview {
+font-family: 'Courier New', monospace;
+font-size: 14px;
+color: #333;
+font-weight: 500;
+flex: 0 1 auto;
+text-align: center;
+margin-left: -40px;
+}
+
+.llm-key-provider {
+font-weight: 600;
+color: #333;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.llm-key-provider img {
+width: 20px;
+height: 20px;
+object-fit: contain;
+border-radius: 4px;
+}
+
+.llm-key-actions {
+display: flex;
+gap: 8px;
+}
+
+.btn-small {
+padding: 6px 12px;
+font-size: 12px;
+}
+
+.btn-danger {
+background-color: #dc3545;
+color: white;
+}
+
+.btn-danger:hover {
+background-color: #c82333;
+}
+
+
+
+/* Auth Type Dropdown */
+
+
+/* Textarea styling */
+#descriptionInput {
+width: 100%;
+padding: 12px 16px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 14px;
+background-color: white;
+transition: border-color 0.2s ease;
+box-sizing: border-box;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+resize: vertical;
+min-height: 80px;
+}
+
+#descriptionInput:focus {
+outline: none;
+border-color: rgba(251, 144, 40, 255);
+box-shadow: 0 0 0 3px rgba(251, 144, 40, 0.1);
+}
+
+
+
+/* Databricks Credentials List */
+.databricks-credentials-list {
+margin-top: 16px;
+}
+
+.databricks-credential-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 12px 16px;
+background-color: #f8f9fa;
+border: 1px solid #e9ecef;
+border-radius: 8px;
+margin-bottom: 8px;
+gap: 16px;
+}
+
+.databricks-credential-info {
+display: flex;
+align-items: center;
+gap: 12px;
+flex: 0 0 auto;
+}
+
+.databricks-credential-provider {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.databricks-credential-provider .provider-logo {
+width: 20px;
+height: 20px;
+object-fit: contain;
+border-radius: 4px;
+flex-shrink: 0;
+}
+
+.databricks-credential-preview {
+font-family: 'Courier New', monospace;
+font-size: 14px;
+color: #333;
+font-weight: 500;
+flex: 0 1 auto;
+text-align: center;
+margin-left: -40px;
+}
+
+.databricks-credential-actions {
+display: flex;
+gap: 8px;
+}
+
+
+
+.send-button {
+position: fixed;
+right: 0;
+bottom: 0; /* Position at the bottom of the footer */
+width: 30px;
+min-width: 30px;
+max-width: 30px;
+height: 28px;
+min-height: 28px;
+max-height: 28px;
+background-color: rgba(251, 144, 40, 255);
+border: none;
+border-left: 2px solid rgba(251, 144, 40, 255);
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.2s ease;
+z-index: 10;
+box-sizing: border-box;
+flex-shrink: 0;
+flex-grow: 0;
+}
+
+.folder-info {
+position: fixed;
+right: 35px;
+bottom: 0; /* Position at the bottom of the footer */
+width: 35px;
+height: 28px;
+min-height: 28px;
+max-height: 28px;
+background-color: white;
+border-top: 2px solid rgba(251, 144, 40, 255);
+border-left: 2px solid rgba(251, 144, 40, 255);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 10;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 10px;
+color: rgba(251, 144, 40, 255);
+font-weight: 500;
+text-align: center;
+line-height: 1.2;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+transition: right 0.2s ease;
+box-sizing: border-box;
+}
+
+.last-modified {
+position: fixed;
+right: 75px;
+bottom: 0; /* Position at the bottom of the footer */
+width: 38px;
+height: 28px;
+min-height: 28px;
+max-height: 28px;
+background-color: white;
+border-top: 2px solid rgba(251, 144, 40, 255);
+border-left: 2px solid rgba(251, 144, 40, 255);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 10;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-size: 10px;
+color: rgba(251, 144, 40, 255);
+font-weight: 500;
+text-align: center;
+line-height: 1.2;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+padding: 0;
+margin: 0;
+box-sizing: border-box;
+min-width: 38px;
+max-width: 120px;
+flex-shrink: 0;
+flex-grow: 0;
+flex-basis: 38px;
+word-break: keep-all;
+text-align-last: center;
+}
+
+.last-modified.compact {
+font-size: 9px;
+letter-spacing: -0.5px;
+text-align: center !important;
+justify-content: center !important;
+align-items: center !important;
+overflow: hidden !important;
+text-align-last: center !important;
+}
+
+/* Compact styling for None text */
+.last-modified.compact {
+font-size: 9px;
+letter-spacing: -0.5px;
+text-align: center !important;
+justify-content: center !important;
+align-items: center !important;
+overflow: hidden !important;
+text-align-last: center !important;
+}
+
+.send-button img {
+width: 16px;
+height: 16px;
+min-width: 16px;
+min-height: 16px;
+max-width: 16px;
+max-height: 16px;
+filter: brightness(0) invert(1);
+display: block;
+margin: 0 auto;
+object-fit: contain;
+flex-shrink: 0;
+flex-grow: 0;
+}
+
+.send-button:hover {
+background-color: rgba(251, 144, 40, 0.8);
+transform: scale(1.05);
+}
+
+.send-button:active {
+transform: scale(0.95);
+}

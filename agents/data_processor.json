@@ -1,0 +1,7 @@
+{
+  "color": "#ff6b6b",
+  "name": "Data Processor",
+  "description": "Processes and preprocesses image data for CNN training",
+  "type": "data",
+  "version": "1.0.0"
+}

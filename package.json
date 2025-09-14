@@ -1,0 +1,36 @@
+{
+  "name": "langsketch",
+  "version": "1.0.0",
+  "description": "LangSketch - A powerful language sketching application",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac"
+  },
+  "keywords": ["language", "sketching", "electron", "desktop"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "icon": "public/icon.iconset/icon_512x512.png",
+  "productName": "LangSketch",
+  "displayName": "LangSketch",
+  "devDependencies": {
+    "electron": "^37.2.6",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.langsketch.app",
+    "productName": "LangSketch",
+    "mac": {
+      "icon": "public/icon.iconset/icon_512x512.png",
+      "category": "public.app-category.developer-tools",
+      "target": "dmg"
+    }
+  },
+  "electronApp": {
+    "name": "LangSketch",
+    "icon": "public/icon.iconset/icon_512x512.png"
+  }
+}

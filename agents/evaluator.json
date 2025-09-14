@@ -1,0 +1,7 @@
+{
+  "color": "#45b7d1",
+  "name": "Evaluator",
+  "description": "Evaluates model performance on test data",
+  "type": "evaluation",
+  "version": "1.0.0"
+}

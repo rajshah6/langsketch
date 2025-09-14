@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logo Converter - Add White Background</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .file-input {
+            margin: 20px 0;
+        }
+        .preview {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .preview-item {
+            text-align: center;
+            margin: 10px;
+        }
+        .preview-item img {
+            max-width: 200px;
+            max-height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: 
+                linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, rgba(251, 144, 40, 1) 0%, rgba(251, 144, 40, 0.9) 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: all 0.2s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 144, 40, 0.4);
+        }
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Logo Converter</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Convert your transparent HTN logo to one with a white background
+        </p>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Upload your transparent HTN logo (PNG format)</li>
+                <li>Preview the original and converted versions</li>
+                <li>Download the new logo with white background</li>
+                <li>Replace the old logo in your public folder</li>
+            </ol>
+        </div>
+
+        <div class="upload-section">
+            <input type="file" id="logoInput" accept="image/*" class="file-input">
+            <br>
+            <button id="convertBtn" class="download-btn" disabled>Convert Logo</button>
+        </div>
+
+        <div class="preview" id="previewSection" style="display: none;">
+            <div class="preview-item">
+                <h3>Original (Transparent)</h3>
+                <img id="originalPreview" alt="Original Logo">
+            </div>
+            <div class="preview-item">
+                <h3>Converted (White Background)</h3>
+                <img id="convertedPreview" alt="Converted Logo">
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button id="downloadBtn" class="download-btn" disabled>Download Converted Logo</button>
+        </div>
+    </div>
+
+    <script>
+        const logoInput = document.getElementById('logoInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewSection = document.getElementById('previewSection');
+        const originalPreview = document.getElementById('originalPreview');
+        const convertedPreview = document.getElementById('convertedPreview');
+
+        let convertedImageData = null;
+
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                convertBtn.disabled = false;
+                displayOriginalPreview(file);
+            }
+        });
+
+        convertBtn.addEventListener('click', function() {
+            const file = logoInput.files[0];
+            if (file) {
+                convertLogo(file);
+            }
+        });
+
+        downloadBtn.addEventListener('click', function() {
+            if (convertedImageData) {
+                downloadImage(convertedImageData, 'htnlogo-white-bg.png');
+            }
+        });
+
+        function displayOriginalPreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function convertLogo(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // Fill with white background
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw the logo on top
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Convert to data URL
+                    convertedImageData = canvas.toDataURL('image/png');
+                    
+                    // Display preview
+                    convertedPreview.src = convertedImageData;
+                    previewSection.style.display = 'flex';
+                    downloadBtn.disabled = false;
+                    
+                    convertBtn.textContent = '✅ Converted!';
+                    convertBtn.style.background = '#4caf50';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function downloadImage(dataUrl, filename) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html> 

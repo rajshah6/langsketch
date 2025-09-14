@@ -1,0 +1,7 @@
+{
+  "color": "#4ecdc4",
+  "name": "Model Trainer",
+  "description": "Trains CNN models on SVHN dataset",
+  "type": "training",
+  "version": "1.0.0"
+}
