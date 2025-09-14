@@ -7,6 +7,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from typing import Dict, Any, Type
 from pydantic import BaseModel, ValidationError, create_model
+from .deimos_wrapper import DeimosCompatibleChatOpenAI
 import json
 import re
 from deimos_router import get_router
@@ -56,7 +57,7 @@ class AgentRuntime:
         selected_model = router.select_model(request_data)
         print(selected_model)
 
-        self.llm = ChatOpenAI(
+        self.llm = DeimosCompatibleChatOpenAI(
             model=selected_model,
             api_key=os.getenv("DEIMOS_API_KEY"),
             base_url=os.getenv("DEIMOS_API_URL"),
@@ -194,7 +195,7 @@ class AgentRuntime:
     def _setup_scrapers(self) -> None:
         # TODO
         pass
-    
+
     def _create_agent(self) -> None:
         """Create and configure the agent with all loaded tools using LangGraph"""
         try:
