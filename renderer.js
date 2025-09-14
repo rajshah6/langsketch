@@ -217,7 +217,6 @@ function initializeDashboard() {
 
   updateOverviewCards();
   createCharts();
-  updateRawData();
   updateLastUpdated();
   updateTableInfo();
 
@@ -744,26 +743,6 @@ function populateLLMDetails() {
   `
     )
     .join("");
-}
-
-function updateRawData() {
-  const rawDataElement = document.getElementById("raw-input-data");
-
-  if (!rawDataElement) {
-    console.error("raw-input-data element not found");
-    return;
-  }
-
-  // Show all rows from the table if available, otherwise just the current row
-  const dataToShow = agentData.allRows || [agentData];
-
-  try {
-    const formattedData = JSON.stringify(dataToShow, null, 2);
-    rawDataElement.textContent = formattedData;
-  } catch (error) {
-    console.error("Error formatting raw data:", error);
-    rawDataElement.textContent = JSON.stringify(dataToShow, null, 2);
-  }
 }
 
 function updateLastUpdated() {
