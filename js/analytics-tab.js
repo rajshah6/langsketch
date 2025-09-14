@@ -463,11 +463,6 @@ DATABRICKS_SCHEMA=default
           <h2>Execution Summary</h2>
           <p class="page-description">
             Overview of the latest agent execution with key performance indicators
-            ${
-              isMockData
-                ? '<br><span style="color: #f59e0b; font-weight: bold;">📊 Using sample data - Configure Databricks credentials for real data</span>'
-                : ""
-            }
           </p>
         </div>
 
