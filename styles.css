@@ -538,20 +538,6 @@ body {
 }
 
 
-/* Footer */
-.app-footer {
-    background: white;
-    padding: 1rem 2rem;
-    border-top: 2px solid #FB9028;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.footer-info {
-    text-align: center;
-    color: #FB9028;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
 
 /* Status indicators */
 .status-success {
