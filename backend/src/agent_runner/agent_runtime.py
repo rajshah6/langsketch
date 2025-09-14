@@ -6,19 +6,50 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from typing import Dict, Any, Type, List
+from pathlib import Path
 from pydantic import BaseModel, ValidationError, create_model
 from .deimos_wrapper import DeimosCompatibleChatOpenAI
+from databricks.vector_search.client import VectorSearchClient
 import json
 import re
 import time
 from deimos_router import get_router
 from .blackbox import test_local
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+current_dir = Path(__file__).resolve().parent
+
+config_path = current_dir.parent / ".langsketch-credentials.json"
+
+# Load the JSON
+with open(config_path, "r", encoding="utf-8") as f:
+    config = json.load(f)
+
+WORKSPACE_URL = None
+PERSONAL_TOKEN = None
+MARTIAN_KEY = None
+
+for entry in config.get("llmKeys", []):
+    if entry.get("provider") == "martian":
+        MARTIAN_KEY = entry.get("apiKey")
+        break
+
+databricks_creds = config.get("databricksCredentials", [])
+if databricks_creds:
+    creds = databricks_creds[0] 
+    WORKSPACE_URL = creds.get("workspaceUrl")
+    PERSONAL_TOKEN = creds.get("personalToken")
+
+# Initialize Databricks client
+if WORKSPACE_URL and PERSONAL_TOKEN:
+    client = VectorSearchClient(
+        workspace_url=WORKSPACE_URL,
+        personal_access_token=PERSONAL_TOKEN
+    )
+else:
+    raise ValueError("Databricks credentials not found in JSON.")
+
+
 router_name = setup_intelligent_router()
-
 class OutputValidationError(Exception):
     """Custom exception for output validation failures"""
     pass
@@ -34,6 +65,7 @@ class AgentRuntime:
         self.config = config
         self.tools = []
         self.vector_store = None
+        self.index = None
         self.builtin_tools = {}
         
         # Initialize all components
@@ -61,14 +93,21 @@ class AgentRuntime:
 
         self.llm = DeimosCompatibleChatOpenAI(
             model=selected_model,
-            api_key=os.getenv("DEIMOS_API_KEY"),
-            base_url=os.getenv("DEIMOS_API_URL"),
+            api_key=MARTIAN_KEY,
+            base_url="https://api.withmartian.com/v1",
         )
 
     def _setup_rag(self) -> None:
-        # TODO
-        pass
-            
+        self.index = client.get_index(endpoint_name=self.config.rag.endpoint, index_name=self.config.rag.index_name)
+    
+    def _get_context(self, prompt: str) -> List[str]:
+        # Retrieve top 3 chunks
+        relevant_chunks = self.index.similarity_search(num_results=3, columns=["text"], query_text=prompt)
+        data_array = relevant_chunks['result']['data_array']
+        raw_texts = [row[0] for row in data_array]  
+        
+        return raw_texts
+    
     def _setup_apis(self) -> None:
         """Setup API integration tools"""
         if not hasattr(self.config, 'apis') or self.config.apis is None:
@@ -568,28 +607,38 @@ class AgentRuntime:
                 input_summary = f"Array Input: {json.dumps(validated_input['array_input'], indent=2)}"
             else:
                 input_summary = f"Input Data: {json.dumps(validated_input, indent=2)}"
-            
+
+            query_string = ""
+            context = self._get_context(str(input_data))
+            context_text = "\n".join(f"- {chunk}" for chunk in context)
+            if context_text:
+                context_text = f"Relevant context:\n{context_text}\n"
+
+            # Build the query string
             query_string = f"""
-    Task: {self.config.agent.description}
+            Task: {self.config.agent.description}
 
-    {input_summary}
+            {input_summary}
 
-    Available Tools: {', '.join(self.get_tool_names())}
+            {context_text}
+            
+            Available Tools: 
+            {', '.join(self.get_tool_names())}
 
-    Tool Usage Instructions:
-    - Use the available tools to gather information, perform calculations, or execute actions as needed
-    - You can call multiple tools in sequence if required
-    - Each tool call should be purposeful and contribute to processing the input data
+            Tool Usage Instructions:
+            - Use the available tools to gather information, perform calculations, or execute actions as needed
+            - You can call multiple tools in sequence if required
+            - Each tool call should be purposeful and contribute to processing the input data
 
-    Process:
-    1. Analyze the input data and determine what tools (if any) you need to use
-    2. Use the tools to process the input and gather the necessary information
-    3. Synthesize the results into a final answer based on the input data
-    4. Format your final answer as a JSON matching the required output schema:
-    {self._create_output_schema_description()}
+            Process:
+            1. Analyze the input data and determine what tools (if any) you need to use
+            2. Use the tools to process the input and gather the necessary information
+            3. Synthesize the results into a final answer based on the input data
+            4. Format your final answer as a JSON matching the required output schema:
+            {self._create_output_schema_description()}
 
-    Provide your response in the required output format.
-    """
+            Provide your response in the required output format.
+            """
             
             print(f"[INFO] Running agent with validated input")
             print(f"[INFO] Available tools: {self.get_tool_names()}")

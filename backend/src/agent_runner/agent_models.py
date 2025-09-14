@@ -25,7 +25,7 @@ class AgentConfig(BaseModel):
 class RAGConfig(BaseModel):
     provider: Literal["databricks"] = "databricks"
     index_name: str
-    description: str
+    endpoint: str
     embedding_model: Literal["databricks-bge-small"] = "databricks-bge-small"
     embedding_endpoint: str = "databricks-bge-small"
     chunk_size: Literal[500] = 500
@@ -132,7 +132,6 @@ class AgentSystemConfig(BaseModel):
         if self.rag:
             description_parts.append("")
             description_parts.append("KNOWLEDGE BASE ACCESS:")
-            description_parts.append(f"- Has access to indexed knowledge: {self.rag.description}")
             description_parts.append(f"- Search index: {self.rag.index_name}")
             description_parts.append(f"- Retrieves top {self.rag.top_k} most relevant chunks of {self.rag.chunk_size} characters")
             description_parts.append("- Can answer questions based on proprietary or specialized knowledge")
