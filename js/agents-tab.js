@@ -18,6 +18,8 @@
       this.tools = [];
       this.toolsCurrentPath = '/';
       this.fileInputEventListenersSetup = false;
+      this.ragIndexName = '';
+      this.ragEndpoint = '';
       
       // Add property watcher to track documents array changes
       Object.defineProperty(this, 'documents', {
@@ -774,6 +776,28 @@
             display: flex;
             align-items: center;
             gap: 12px;
+          }
+
+          .rag-config-fields {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+          }
+
+          .rag-config-input {
+            width: 120px;
+            height: 28px;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+          }
+
+          .rag-config-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
           }
 
           .file-count-circle {
@@ -2718,6 +2742,10 @@
                       </svg>
                     </div>
                     <div class="documents-controls">
+                      <div class="rag-config-fields">
+                        <input type="text" id="indexNameInput" placeholder="Index Name" class="rag-config-input" value="">
+                        <input type="text" id="endpointInput" placeholder="Endpoint" class="rag-config-input" value="">
+                      </div>
                       <div class="file-count-circle" id="fileCountCircle">
                         <span class="file-count-number" id="fileCountNumber">0</span>
                       </div>
@@ -3264,6 +3292,23 @@
       // Output modal event listeners
       this.setupOutputModalEventListeners();
       // Documents functionality is now handled inline
+      
+      // RAG config fields event listeners
+      const indexNameInput = document.getElementById('indexNameInput');
+      const endpointInput = document.getElementById('endpointInput');
+      
+      if (indexNameInput) {
+        indexNameInput.addEventListener('input', (e) => {
+          this.ragIndexName = e.target.value;
+        });
+      }
+      
+      if (endpointInput) {
+        endpointInput.addEventListener('input', (e) => {
+          this.ragEndpoint = e.target.value;
+        });
+      }
+      
       // Tools modal event listeners
       this.setupToolsModalEventListeners();
       // Tool configuration modal event listeners
@@ -4069,7 +4114,8 @@
 
         rag: {
           provider: "databricks",
-          index_name: this.documents && this.documents.length > 0 ? `${agentName}_vectordb` : `${agentName}_vectordb`,
+          index_name: this.ragIndexName || (this.documents && this.documents.length > 0 ? `${agentName}_vectordb` : `${agentName}_vectordb`),
+          endpoint: this.ragEndpoint || "",
           description: this.documents && this.documents.length > 0 
             ? `Vector database for ${agentName} agent containing uploaded documents and embeddings`
             : `Vector database for ${agentName} agent (no documents uploaded yet)`,
