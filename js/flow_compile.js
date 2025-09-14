@@ -930,7 +930,7 @@ def run(initial_input=None):
 
       // Add agent initialization
       agents.forEach(agentName => {
-        runFunction += `    agents['${agentName}'] = build_agent('${agentName}', api_key)
+        runFunction += `    agents['${agentName}'] = build_agent('${agentName}')
   `;
       });
 
