@@ -54,7 +54,7 @@
         style.id = styleId;
         style.textContent = `
           .agents-view {
-            padding: 0 0 0 20px;
+            padding: 0 20px 0 20px;
             text-align: left;
             width: 100% !important;
             max-width: none !important;
