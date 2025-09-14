@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from typing import Dict, Any, Type, List
+from pathlib import Path
 from pydantic import BaseModel, ValidationError, create_model
 from .deimos_wrapper import DeimosCompatibleChatOpenAI
 import json
@@ -13,10 +14,21 @@ import re
 import time
 from deimos_router import get_router
 from .blackbox import test_local
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+current_dir = Path(__file__).resolve().parent
+
+config_path = current_dir.parent / ".langsketch-credentials.json"
+
+# Load the JSON
+with open(config_path, "r", encoding="utf-8") as f:
+    config = json.load(f)
+
+MARTIAN_KEY = None
+for entry in config.get("llmKeys", []):
+    if entry.get("provider") == "martian":
+        MARTIAN_KEY = entry.get("apiKey")
+        break
+    
 router_name = setup_intelligent_router()
 
 class OutputValidationError(Exception):
@@ -61,8 +73,8 @@ class AgentRuntime:
 
         self.llm = DeimosCompatibleChatOpenAI(
             model=selected_model,
-            api_key=os.getenv("DEIMOS_API_KEY"),
-            base_url=os.getenv("DEIMOS_API_URL"),
+            api_key=MARTIAN_KEY,
+            base_url="https://api.withmartian.com/v1",
         )
 
     def _setup_rag(self) -> None:
