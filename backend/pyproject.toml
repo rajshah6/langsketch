@@ -17,6 +17,7 @@ dependencies = [
     "langgraph>=0.6.7",
     "pint>=0.25",
     "pydantic>=2.11.8",
+    "pypdf2>=3.0.1",
     "requests>=2.32.5",
     "uvicorn>=0.35.0",
 ]
