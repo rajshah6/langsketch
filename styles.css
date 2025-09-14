@@ -205,6 +205,25 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    width: 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+#refresh-data .btn-icon {
+    transition: transform 0.3s ease;
+}
+
+#refresh-data:hover .btn-icon {
+    transform: rotate(180deg);
 }
 
 .btn:hover {

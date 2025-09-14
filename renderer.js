@@ -807,6 +807,16 @@ function setupEventListeners() {
     exportData();
   });
 
+  // Open Databricks button
+  document
+    .getElementById("open-databricks")
+    .addEventListener("click", function () {
+      const { shell } = require("electron");
+      shell.openExternal(
+        "https://dbc-2f5ab88f-ea86.cloud.databricks.com/explore/data/workspace/default?o=3699346728778382"
+      );
+    });
+
   // Listen for Databricks connection errors
   ipcRenderer.on("databricks-error", (event, errorMessage) => {
     showError(`Databricks connection error: ${errorMessage}`);
