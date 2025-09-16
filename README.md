@@ -8,7 +8,7 @@
    Create multi-agent workflows in seconds
 </p>
 
-![LangSketch Video](public/video.mp4)
+[![LangSketch Video](public/video.mp4)](https://github.com/user-attachments/assets/3d13607c-3469-4cb9-af19-944cf5ae1f13)
 
 ![LangSketch Canvas](public/canvas.png)
 
