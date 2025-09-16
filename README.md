@@ -1,5 +1,5 @@
 <div align="center">
-    <img alt="Logo" src="docs/icon.png" width="100" />
+    <img alt="Logo" src="public/logo.png" width=150 />
 </div>
 <h1 align="center">
     LangSketch — Visual AI Agent Builder
@@ -8,11 +8,11 @@
    Create multi-agent workflows in seconds
 </p>
 
-![LangSketch Video](docs/video.mp4)
+![LangSketch Video](public/video.mp4)
 
-![LangSketch Agent Builder](docs/ui.jpeg)
+![LangSketch Canvas](public/canvas.png)
 
-![LangSketch Canvas](docs/canvas.jpeg)
+![LangSketch Agent Builder](public/agent_builder.png)
 
 ## How It Works
 
