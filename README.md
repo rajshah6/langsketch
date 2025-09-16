@@ -230,3 +230,4 @@ The packaged application will be available in the `dist/` directory with platfor
 - [LangChain](https://langchain.com/) and [LangGraph](https://github.com/langchain-ai/langgraph) for AI orchestration
 - [Chart.js](https://www.chartjs.org/) for analytics visualization
 - [Databricks](https://databricks.com/) for vector search and analytics capabilities
+- [Builders] Raj Shah, Tobia Livadariu, Taha Shahid, Joshua Elkind
